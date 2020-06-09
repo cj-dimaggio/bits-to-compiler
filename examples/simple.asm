@@ -1,4 +1,2 @@
-jz halt
-mov al, al
-halt:
-    hlt
+RESB 510
+dw 0xaa55
