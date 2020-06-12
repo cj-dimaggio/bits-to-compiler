@@ -38,6 +38,8 @@ fn compile(output_file: fs::File, input_contents: String) {
     if let Err(e) = write_buffer.flush() {
         println!("Unable to write to output: {}", e);
     }
+
+    eprintln!("Finished compiling");
 }
 
 fn main() {
