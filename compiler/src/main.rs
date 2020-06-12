@@ -5,7 +5,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::io::BufWriter;
 
-fn compile(output_file: fs::File, input_contents: String) {
+fn old_compile(output_file: fs::File, input_contents: String) {
     let mut write_buffer = BufWriter::new(output_file);
     let mut current_byte: u8 = 0;
     let mut current_bit_position = 0;
@@ -61,7 +61,7 @@ fn main() {
                 let output_path = file_path.with_extension("bin");
                 eprintln!("Opening output: {}", output_path.display());
                 match fs::File::create(&output_path) {
-                    Ok(output_file) => compile(output_file, input_contents),
+                    Ok(output_file) => compiler::compile(output_file, input_contents),
                     Err(e) => println!("Could not open output file {}: {}", output_path.display(), e)
                 }
             },
