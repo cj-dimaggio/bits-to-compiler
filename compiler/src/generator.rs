@@ -18,13 +18,23 @@ fn write_byte<W: Write> (byte_array: [bool; 8], write_buffer: &mut BufWriter<W>)
     }
 }
 
+fn write_string_literal<W: Write> (literal: String, write_buffer: &mut BufWriter<W>) {
+    for byte in literal.bytes() {
+        if let Err(e) = write_buffer.write(&[byte]) {
+            println!("Unable to write to output: {}", e);
+            return;
+        }
+    }
+}
+
 pub fn create_binary(tokens: Vec<Token>, output_file: fs::File) {
     let mut write_buffer = BufWriter::new(output_file);
 
     for token in tokens {
         match token {
             Token::BinaryByte(byte) => write_byte(byte, &mut write_buffer),
-            Token::Comment(_) => continue
+            Token::StringLiteral(literal) => write_string_literal(literal, &mut write_buffer),
+            Token::Comment(_) => continue,
         }
     }
 
@@ -46,6 +56,26 @@ mod tests {
         
             write_byte([true, false, true, true, false, false, true, true], &mut buffer);    
         }
+
+        assert_eq!(write_vec.len(), 1);
         assert_eq!(write_vec[0], 0b10110011);
+    }
+
+    #[test]
+    fn writes_a_string_literal() {
+        let mut write_vec = Vec::<u8>::new();
+        {
+            let mut buffer = BufWriter::new(Cursor::new(&mut write_vec));
+        
+            write_string_literal(String::from("FooBar"), &mut buffer);    
+        }
+        assert_eq!(write_vec.len(), 6);
+
+        assert_eq!(write_vec[0], 'F' as u8);
+        assert_eq!(write_vec[1], 'o' as u8);
+        assert_eq!(write_vec[2], 'o' as u8);
+        assert_eq!(write_vec[3], 'B' as u8);
+        assert_eq!(write_vec[4], 'a' as u8);
+        assert_eq!(write_vec[5], 'r' as u8);
     }
 }

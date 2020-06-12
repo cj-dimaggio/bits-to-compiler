@@ -1,16 +1,20 @@
 #[derive(Debug, PartialEq, Eq)]
 pub enum TokenizationError {
     UnexpectedCharacter,
-    IncompleteByte
+    IncompleteByte,
+    UnterminatedStringLiteral
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
     BinaryByte([bool; 8]),
+    StringLiteral(String),
     Comment(String),
 }
 
-fn parse_binary_byte(char_iter: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<Token, TokenizationError> {
+type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;
+
+fn parse_binary_byte(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut byte = [false, false, false, false, false, false, false, false];
     let mut i = 0;
 
@@ -37,8 +41,30 @@ fn parse_binary_byte(char_iter: &mut std::iter::Peekable<std::str::Chars<'_>>) -
     return Ok(Token::BinaryByte(byte));
 }
 
-fn parse_comment(char_iter: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<Token, TokenizationError> {
+fn parse_string_literal(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
+    let mut literal = String::new();
+
+    // Skip the opening quote
+    char_iter.next();
+
+    loop {
+        match char_iter.next() {
+            Some('"') => break,
+            Some(c) => {
+                literal.push(c);
+            },
+            None => return Err(TokenizationError::UnterminatedStringLiteral)
+        }
+    }
+
+    return Ok(Token::StringLiteral(literal));
+}
+
+fn parse_comment(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut comment = String::new();
+
+    // Skip the starting ';' char
+    char_iter.next();
 
     while let Some(c) = char_iter.next() {
         if c == '\n' {
@@ -56,19 +82,16 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
     let mut char_iter = contents.chars().peekable();
 
     while let Some(c) = char_iter.peek() {
-        match c {
-            '1' | '0' => tokens.push(parse_binary_byte(&mut char_iter)?),
-            ';' => {
-                // Skip the ;
-                char_iter.next();
-                tokens.push(parse_comment(&mut char_iter)?);
-            },
+        tokens.push(match c {
+            '1' | '0' => parse_binary_byte(&mut char_iter)?,
+            ';' => parse_comment(&mut char_iter)?,
+            '"' => parse_string_literal(&mut char_iter)?,
             c if c.is_whitespace() => {
                 char_iter.next();
                 continue;
             },
             _ => return Err(TokenizationError::UnexpectedCharacter)
-        }
+        });
     }
 
     return Ok(tokens);
@@ -135,7 +158,7 @@ mod tests {
 
     #[test]
     fn extracts_comment() {
-        let code = "hello world";
+        let code = ";hello world";
         let mut iter = code.chars().peekable();
         assert_eq!(
             parse_comment(&mut iter),
@@ -145,7 +168,7 @@ mod tests {
 
     #[test]
     fn extracts_comment_with_newline() {
-        let code = "hello world\ntest";
+        let code = ";hello world\ntest";
         let mut iter = code.chars().peekable();
         assert_eq!(
             parse_comment(&mut iter),
@@ -155,12 +178,13 @@ mod tests {
 
     #[test]
     fn tokenizes_codeblock() {
-        let code = "
+        let code = r#"
             11110000 ; Example of a comment
             00000001 10001000
             ; On its own
             11111111 ; Can have 1s and 0s in comment
-        ";
+            "This is a test"
+        "#;
         assert_eq!(
             tokenize(String::from(code)),
             Ok(vec![
@@ -171,6 +195,7 @@ mod tests {
                 Token::Comment(String::from(" On its own")),
                 Token::BinaryByte([true, true, true, true, true, true, true, true]),
                 Token::Comment(String::from(" Can have 1s and 0s in comment")),
+                Token::StringLiteral(String::from("This is a test")),
             ])
         );
     }
@@ -191,6 +216,26 @@ mod tests {
         assert_eq!(
             tokenize(String::from(code)),
             Err(TokenizationError::IncompleteByte)
+        );
+    }
+
+    #[test]
+    fn extract_string_literal() {
+        let code = r#""FooBar""#;
+        let mut iter = code.chars().peekable();
+        assert_eq!(
+            parse_string_literal(&mut iter),
+            Ok(Token::StringLiteral(String::from("FooBar")))
+        );
+    }
+
+    #[test]
+    fn catches_unclosed_string_literal() {
+        let code = r#""FooBar"#;
+        let mut iter = code.chars().peekable();
+        assert_eq!(
+            parse_string_literal(&mut iter),
+            Err(TokenizationError::UnterminatedStringLiteral)
         );
     }
 }
