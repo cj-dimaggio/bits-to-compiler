@@ -12,7 +12,7 @@ pub enum Token {
     Comment(String),
 }
 
-type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;
+type CharIterator<'a> = itertools::MultiPeek<std::str::Chars<'a>>;
 
 mod binary_byte;
 mod string_literal;
@@ -20,9 +20,11 @@ mod comment;
 
 pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
     let mut tokens = Vec::<Token>::new();
-    let mut char_iter = contents.chars().peekable();
+    let mut char_iter = itertools::multipeek(contents.chars());
 
-    while let Some(c) = char_iter.peek() {
+    while let Some(&c) = char_iter.peek() {
+        char_iter.reset_peek();
+
         tokens.push(match c {
             '1' | '0' => binary_byte::parse(&mut char_iter)?,
             ';' => comment::parse(&mut char_iter)?,
@@ -45,23 +47,12 @@ mod tests {
     #[test]
     fn tokenizes_codeblock() {
         let code = r#"
-            11110000 ; Example of a comment
-            00000001 10001000
-            ; On its own
-            11111111 ; Can have 1s and 0s in comment
-            "This is a test"
+            10001000
         "#;
         assert_eq!(
             tokenize(String::from(code)),
             Ok(vec![
-                Token::BinaryByte([true, true, true, true, false, false, false, false]),
-                Token::Comment(String::from(" Example of a comment")),
-                Token::BinaryByte([false, false, false, false, false, false, false, true]),
                 Token::BinaryByte([true, false, false, false, true, false, false, false]),
-                Token::Comment(String::from(" On its own")),
-                Token::BinaryByte([true, true, true, true, true, true, true, true]),
-                Token::Comment(String::from(" Can have 1s and 0s in comment")),
-                Token::StringLiteral(String::from("This is a test")),
             ])
         );
     }

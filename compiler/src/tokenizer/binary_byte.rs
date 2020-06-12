@@ -36,7 +36,7 @@ mod tests {
     fn extracts_one_binary_byte() {
         let code = "11001100";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut itertools::multipeek(code.chars())),
             Ok(Token::BinaryByte([true, true, false, false, true, true, false, false]))
         );
     }
@@ -44,7 +44,7 @@ mod tests {
     #[test]
     fn extracts_one_binary_byte_from_longer() {
         let code = "1111111100000000";
-        let mut iter = code.chars().peekable();
+        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
             Ok(Token::BinaryByte([true, true, true, true, true, true, true, true]))
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn extracts_one_binary_byte_with_whitespace() {
         let code = "11110000 ";
-        let mut iter = code.chars().peekable();
+        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
             Ok(Token::BinaryByte([true, true, true, true, false, false, false, false]))
@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn errors_on_incomplete_binary() {
         let code = "1010";
-        let mut iter = code.chars().peekable();
+        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
             Err(TokenizationError::IncompleteByte)
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn errors_on_interrupted_binary() {
         let code = "1010;1010";
-        let mut iter = code.chars().peekable();
+        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
             Err(TokenizationError::IncompleteByte)

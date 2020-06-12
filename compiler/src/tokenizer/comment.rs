@@ -24,7 +24,7 @@ mod tests {
     #[test]
     fn extracts_comment() {
         let code = ";hello world";
-        let mut iter = code.chars().peekable();
+        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
             Ok(Token::Comment(String::from("hello world")))
@@ -34,7 +34,7 @@ mod tests {
     #[test]
     fn extracts_comment_with_newline() {
         let code = ";hello world\ntest";
-        let mut iter = code.chars().peekable();
+        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
             Ok(Token::Comment(String::from("hello world")))
