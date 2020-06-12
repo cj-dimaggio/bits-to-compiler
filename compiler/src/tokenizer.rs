@@ -6,20 +6,23 @@ pub enum TokenizationError {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
-    BinaryByte(String),
+    BinaryByte([bool; 8]),
     Comment(String),
 }
 
 fn parse_binary_byte(char_iter: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<Token, TokenizationError> {
-    let mut byte = String::new();
+    let mut byte = [false, false, false, false, false, false, false, false];
+    let mut i = 0;
 
     while let Some(c) = char_iter.peek() {
         match c {
             '1' | '0' => {
-                byte.push(*c);
+                byte[i] = *c == '1';
+
+                i += 1;
                 char_iter.next();
 
-                if byte.len() == 8 {
+                if i == 8 {
                     break;
                 }
             },
@@ -27,7 +30,7 @@ fn parse_binary_byte(char_iter: &mut std::iter::Peekable<std::str::Chars<'_>>) -
         }
     }
 
-    if byte.len() < 8 {
+    if i < 8 {
         return Err(TokenizationError::IncompleteByte);
     }
 
@@ -80,7 +83,7 @@ mod tests {
         let code = "11001100";
         assert_eq!(
             parse_binary_byte(&mut code.chars().peekable()),
-            Ok(Token::BinaryByte(String::from("11001100")))
+            Ok(Token::BinaryByte([true, true, false, false, true, true, false, false]))
         );
     }
 
@@ -90,7 +93,7 @@ mod tests {
         let mut iter = code.chars().peekable();
         assert_eq!(
             parse_binary_byte(&mut iter),
-            Ok(Token::BinaryByte(String::from("11111111")))
+            Ok(Token::BinaryByte([true, true, true, true, true, true, true, true]))
         );
 
         // Make sure that the iterator advanced correctly
@@ -103,7 +106,7 @@ mod tests {
         let mut iter = code.chars().peekable();
         assert_eq!(
             parse_binary_byte(&mut iter),
-            Ok(Token::BinaryByte(String::from("11110000")))
+            Ok(Token::BinaryByte([true, true, true, true, false, false, false, false]))
         );
 
         // Make sure that the iterator advanced correctly
@@ -161,12 +164,12 @@ mod tests {
         assert_eq!(
             tokenize(String::from(code)),
             Ok(vec![
-                Token::BinaryByte(String::from("11110000")),
+                Token::BinaryByte([true, true, true, true, false, false, false, false]),
                 Token::Comment(String::from(" Example of a comment")),
-                Token::BinaryByte(String::from("00000001")),
-                Token::BinaryByte(String::from("10001000")),
+                Token::BinaryByte([false, false, false, false, false, false, false, true]),
+                Token::BinaryByte([true, false, false, false, true, false, false, false]),
                 Token::Comment(String::from(" On its own")),
-                Token::BinaryByte(String::from("11111111")),
+                Token::BinaryByte([true, true, true, true, true, true, true, true]),
                 Token::Comment(String::from(" Can have 1s and 0s in comment")),
             ])
         );

@@ -1,7 +1,14 @@
 use std::fs;
 
 mod tokenizer;
+mod generator;
 
 pub fn compile(output_file: fs::File, input_contents: String) {
-    tokenizer::tokenize(input_contents);
+    match tokenizer::tokenize(input_contents) {
+        Err(e) => {
+            println!("Compilation error: {:?}", e);
+            return;
+        },
+        Ok(tokens) => generator::create_binary(tokens, output_file),
+    }
 }
