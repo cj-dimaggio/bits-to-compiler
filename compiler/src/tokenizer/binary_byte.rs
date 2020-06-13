@@ -28,7 +28,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         return Err(TokenizationError::IncompleteByte);
     }
 
-    Ok(Token::BinaryByte(byte))
+    Ok(Token::Binary(byte))
 }
 
 
@@ -41,7 +41,7 @@ mod tests {
         let code = "0b11001100";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
-            Ok(Token::BinaryByte([true, true, false, false, true, true, false, false]))
+            Ok(Token::Binary([true, true, false, false, true, true, false, false]))
         );
     }
 
@@ -51,7 +51,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::BinaryByte([true, true, true, true, true, true, true, true]))
+            Ok(Token::Binary([true, true, true, true, true, true, true, true]))
         );
 
         // Make sure that the iterator advanced correctly
@@ -64,7 +64,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::BinaryByte([true, true, true, true, false, false, false, false]))
+            Ok(Token::Binary([true, true, true, true, false, false, false, false]))
         );
 
         // Make sure that the iterator advanced correctly

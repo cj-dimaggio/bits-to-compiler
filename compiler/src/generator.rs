@@ -32,11 +32,9 @@ pub fn create_binary(tokens: Vec<Token>, output_file: fs::File) {
 
     for token in tokens {
         match token {
-            Token::BinaryByte(byte) => write_byte(byte, &mut write_buffer),
-            Token::StringLiteral(literal) => write_string_literal(literal, &mut write_buffer),
-            Token::Number(_) => continue,
-            Token::Identifier(_) => continue,
-            Token::Comment(_) => continue,
+            Token::Binary(byte) => write_byte(byte, &mut write_buffer),
+            Token::QuotedString(literal) => write_string_literal(literal, &mut write_buffer),
+            _ => continue,
         }
     }
 

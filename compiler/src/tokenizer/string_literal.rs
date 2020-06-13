@@ -16,7 +16,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         }
     }
 
-    Ok(Token::StringLiteral(literal))
+    Ok(Token::QuotedString(literal))
 }
 
 #[cfg(test)]
@@ -29,7 +29,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::StringLiteral(String::from("FooBar")))
+            Ok(Token::QuotedString(String::from("FooBar")))
         );
     }
 

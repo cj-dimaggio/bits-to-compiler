@@ -80,7 +80,7 @@ mod tests {
         let code = "0b11001100";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
-            Ok(Token::BinaryByte([true, true, false, false, true, true, false, false]))
+            Ok(Token::Binary([true, true, false, false, true, true, false, false]))
         );
     }
 

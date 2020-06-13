@@ -7,6 +7,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     assert_eq!(char_iter.next(), Some(';'));
 
     while let Some(c) = char_iter.next() {
+        // We don't want to swallow newlines
         if c == '\n' {
             break;
         }
@@ -14,7 +15,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         comment.push(c)
     }
     
-    Ok(Token::Comment(comment))
+    Ok(Token::Newline)
 }
 
 #[cfg(test)]
@@ -27,7 +28,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::Comment(String::from("hello world")))
+            Ok(Token::Newline)
         );
     }
 
@@ -37,7 +38,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::Comment(String::from("hello world")))
+            Ok(Token::Newline)
         );
     }
 }

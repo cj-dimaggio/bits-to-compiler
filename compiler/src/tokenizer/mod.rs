@@ -7,11 +7,12 @@ pub enum TokenizationError {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
-    BinaryByte([bool; 8]),
-    StringLiteral(String),
+    Binary([bool; 8]),
+    QuotedString(String),
     Number(i64),
     Identifier(String),
-    Comment(String),
+    Multiply,
+    Newline,
 }
 
 type CharIterator<'a> = itertools::MultiPeek<std::str::Chars<'a>>;
@@ -20,6 +21,11 @@ mod binary_byte;
 mod string_literal;
 mod alphanumeric;
 mod comment;
+
+fn simple_symbol(token: Token, char_iter: &mut CharIterator) -> Token {
+    char_iter.next();
+    token
+}
 
 pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
     let mut tokens = Vec::<Token>::new();
@@ -32,6 +38,8 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
         tokens.push(match c {
             ';' => comment::parse(&mut char_iter)?,
             '"' => string_literal::parse(&mut char_iter)?,
+            '*' => simple_symbol(Token::Multiply, &mut char_iter),
+            '\n' => simple_symbol(Token::Newline, &mut char_iter),
             c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter)?,
             c if c.is_whitespace() => {
                 char_iter.next();
@@ -61,20 +69,30 @@ mod tests {
             "This is a test"
             1234
             Hello_World
+            0b10001000 * 5
         "#;
         assert_eq!(
             tokenize(String::from(code)),
             Ok(vec![
-                Token::BinaryByte([true, true, true, true, false, false, false, false]),
-                Token::Comment(String::from(" Example of a comment")),
-                Token::BinaryByte([false, false, false, false, false, false, false, true]),
-                Token::BinaryByte([true, false, false, false, true, false, false, false]),
-                Token::Comment(String::from(" On its own")),
-                Token::BinaryByte([true, true, true, true, true, true, true, true]),
-                Token::Comment(String::from(" Can have 1s and 0s in comment")),
-                Token::StringLiteral(String::from("This is a test")),
+                Token::Newline,
+                Token::Binary([true, true, true, true, false, false, false, false]),
+                Token::Newline,
+                Token::Binary([false, false, false, false, false, false, false, true]),
+                Token::Binary([true, false, false, false, true, false, false, false]),
+                Token::Newline,
+                Token::Newline,
+                Token::Binary([true, true, true, true, true, true, true, true]),
+                Token::Newline,
+                Token::QuotedString(String::from("This is a test")),
+                Token::Newline,
                 Token::Number(1234),
+                Token::Newline,
                 Token::Identifier(String::from("Hello_World")),
+                Token::Newline,
+                Token::Binary([true, false, false, false, true, false, false, false]),
+                Token::Multiply,
+                Token::Number(5),
+                Token::Newline,
             ])
         );
     }
