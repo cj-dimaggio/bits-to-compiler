@@ -4,6 +4,10 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut byte = [false, false, false, false, false, false, false, false];
     let mut i = 0;
 
+    // Skip the 0b prefix
+    assert_eq!(char_iter.next(), Some('0'));
+    assert_eq!(char_iter.next(), Some('b'));
+
     while let Some(c) = char_iter.peek() {
         match c {
             '1' | '0' => {
@@ -24,7 +28,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         return Err(TokenizationError::IncompleteByte);
     }
 
-    return Ok(Token::BinaryByte(byte));
+    Ok(Token::BinaryByte(byte))
 }
 
 
@@ -34,7 +38,7 @@ mod tests {
 
     #[test]
     fn extracts_one_binary_byte() {
-        let code = "11001100";
+        let code = "0b11001100";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
             Ok(Token::BinaryByte([true, true, false, false, true, true, false, false]))
@@ -43,7 +47,7 @@ mod tests {
 
     #[test]
     fn extracts_one_binary_byte_from_longer() {
-        let code = "1111111100000000";
+        let code = "0b1111111100000000";
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
@@ -56,7 +60,7 @@ mod tests {
 
     #[test]
     fn extracts_one_binary_byte_with_whitespace() {
-        let code = "11110000 ";
+        let code = "0b11110000 ";
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
@@ -69,7 +73,7 @@ mod tests {
 
     #[test]
     fn errors_on_incomplete_binary() {
-        let code = "1010";
+        let code = "0b1010";
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
@@ -79,7 +83,7 @@ mod tests {
 
     #[test]
     fn errors_on_interrupted_binary() {
-        let code = "1010;1010";
+        let code = "0b1010;1010";
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),

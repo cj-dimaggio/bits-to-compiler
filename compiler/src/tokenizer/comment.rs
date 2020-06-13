@@ -4,7 +4,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut comment = String::new();
 
     // Skip the starting ';' char
-    char_iter.next();
+    assert_eq!(char_iter.next(), Some(';'));
 
     while let Some(c) = char_iter.next() {
         if c == '\n' {
@@ -14,7 +14,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         comment.push(c)
     }
     
-    return Ok(Token::Comment(comment));
+    Ok(Token::Comment(comment))
 }
 
 #[cfg(test)]

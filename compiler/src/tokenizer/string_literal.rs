@@ -4,7 +4,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut literal = String::new();
 
     // Skip the opening quote
-    char_iter.next();
+    assert_eq!(char_iter.next(), Some('"'));
 
     loop {
         match char_iter.next() {
@@ -16,7 +16,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         }
     }
 
-    return Ok(Token::StringLiteral(literal));
+    Ok(Token::StringLiteral(literal))
 }
 
 #[cfg(test)]
