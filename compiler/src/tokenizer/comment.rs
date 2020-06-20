@@ -1,6 +1,7 @@
 use super::*;
 
-pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
+// Shouldn't do anything really but move the iterator forward past the comment
+pub fn parse(char_iter: &mut CharIterator) -> Result<(), TokenizationError> {
     let mut comment = String::new();
 
     // Skip the starting ';' char
@@ -14,8 +15,8 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         
         comment.push(c)
     }
-    
-    Ok(Token::Newline)
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -28,7 +29,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::Newline)
+            Ok(())
         );
     }
 
@@ -38,7 +39,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::Newline)
+            Ok(())
         );
     }
 }

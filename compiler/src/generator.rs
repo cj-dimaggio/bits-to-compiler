@@ -2,16 +2,7 @@ use std::fs;
 use std::io::{Write, BufWriter};
 use super::tokenizer::Token;
 
-fn write_byte<W: Write> (byte_array: [bool; 8], write_buffer: &mut BufWriter<W>) {
-    let mut byte: u8 = 0;
-
-    for i in 0..8 {
-        if byte_array[i] {
-            let bit: u8 = 1 << (7 - i);
-            byte |= bit;
-        }
-    }
-
+fn write_byte<W: Write> (byte: u8, write_buffer: &mut BufWriter<W>) {
     if let Err(e) = write_buffer.write(&[byte]) {
         println!("Unable to write to output: {}", e);
         return;
@@ -54,7 +45,7 @@ mod tests {
         {
             let mut buffer = BufWriter::new(Cursor::new(&mut write_vec));
         
-            write_byte([true, false, true, true, false, false, true, true], &mut buffer);    
+            write_byte(0b10110011, &mut buffer);    
         }
 
         assert_eq!(write_vec.len(), 1);

@@ -1,18 +1,18 @@
 #[derive(Debug, PartialEq, Eq)]
 pub enum TokenizationError {
     UnexpectedCharacter,
-    IncompleteByte,
+    MalformedByte,
     UnterminatedStringLiteral
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
-    Binary([bool; 8]),
+    Binary(u8),
     QuotedString(String),
-    Number(i64),
-    Identifier(String),
+    Number(i16),
+    Label(String),
+    Reference(String),
     Multiply,
-    Newline,
 }
 
 type CharIterator<'a> = itertools::MultiPeek<std::str::Chars<'a>>;
@@ -36,10 +36,12 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
         char_iter.reset_peek();
 
         tokens.push(match c {
-            ';' => comment::parse(&mut char_iter)?,
+            ';' => { 
+                comment::parse(&mut char_iter)?;
+                continue;
+            },
             '"' => string_literal::parse(&mut char_iter)?,
             '*' => simple_symbol(Token::Multiply, &mut char_iter),
-            '\n' => simple_symbol(Token::Newline, &mut char_iter),
             c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter)?,
             c if c.is_whitespace() => {
                 char_iter.next();
@@ -74,25 +76,16 @@ mod tests {
         assert_eq!(
             tokenize(String::from(code)),
             Ok(vec![
-                Token::Newline,
-                Token::Binary([true, true, true, true, false, false, false, false]),
-                Token::Newline,
-                Token::Binary([false, false, false, false, false, false, false, true]),
-                Token::Binary([true, false, false, false, true, false, false, false]),
-                Token::Newline,
-                Token::Newline,
-                Token::Binary([true, true, true, true, true, true, true, true]),
-                Token::Newline,
+                Token::Binary(0b11110000),
+                Token::Binary(0b00000001),
+                Token::Binary(0b10001000),
+                Token::Binary(0b11111111),
                 Token::QuotedString(String::from("This is a test")),
-                Token::Newline,
                 Token::Number(1234),
-                Token::Newline,
-                Token::Identifier(String::from("Hello_World")),
-                Token::Newline,
-                Token::Binary([true, false, false, false, true, false, false, false]),
+                Token::Reference(String::from("Hello_World")),
+                Token::Binary(0b10001000),
                 Token::Multiply,
                 Token::Number(5),
-                Token::Newline,
             ])
         );
     }
@@ -112,7 +105,7 @@ mod tests {
         ";
         assert_eq!(
             tokenize(String::from(code)),
-            Err(TokenizationError::IncompleteByte)
+            Err(TokenizationError::MalformedByte)
         );
     }
 }

@@ -1,2 +1,1 @@
-RESB 510
-dw 0xaa55
+add ah,0x0e

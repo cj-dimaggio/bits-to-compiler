@@ -1,5 +1,5 @@
 use std::env;
-use std::fs;
+use std::fs::File;
 use std::path::Path;
 use std::ffi::OsStr;
 
@@ -17,12 +17,12 @@ fn main() {
         }
 
         eprintln!("Opening input: {}", filename);
-        match fs::read_to_string(filename) {
-            Ok(input_contents) => {
+        match File::open(filename) {
+            Ok(input_file) => {
                 let output_path = file_path.with_extension("bin");
                 eprintln!("Opening output: {}", output_path.display());
-                match fs::File::create(&output_path) {
-                    Ok(output_file) => compiler::compile(output_file, input_contents),
+                match File::create(&output_path) {
+                    Ok(output_file) => compiler::compile(input_file, output_file),
                     Err(e) => println!("Could not open output file {}: {}", output_path.display(), e)
                 }
             },

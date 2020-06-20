@@ -37,7 +37,7 @@ fn parse_number(char_iter: &mut CharIterator) -> Result<Token, TokenizationError
             }
         }
     }
-    let number = number.parse::<i64>().expect("parse_number did not correctly parse a number");
+    let number = number.parse::<i16>().expect("parse_number did not correctly parse a number");
     Ok(Token::Number(number))
 }
 
@@ -56,7 +56,7 @@ fn parse_identifier(char_iter: &mut CharIterator) -> Result<Token, TokenizationE
             }
         }
     }
-    Ok(Token::Identifier(identifier))
+    Ok(Token::Reference(identifier))
 }
 
 pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
@@ -80,7 +80,7 @@ mod tests {
         let code = "0b11001100";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
-            Ok(Token::Binary([true, true, false, false, true, true, false, false]))
+            Ok(Token::Binary(0b11001100))
         );
     }
 
@@ -98,7 +98,7 @@ mod tests {
         let code = "foo_bar2";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
-            Ok(Token::Identifier(String::from("foo_bar2")))
+            Ok(Token::Reference(String::from("foo_bar2")))
         );
     }
 

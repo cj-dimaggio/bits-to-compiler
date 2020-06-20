@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
-    let mut byte = [false, false, false, false, false, false, false, false];
+    let mut byte = 0;
     let mut i = 0;
 
     // Skip the 0b prefix
@@ -11,21 +11,20 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     while let Some(c) = char_iter.peek() {
         match c {
             '1' | '0' => {
-                byte[i] = *c == '1';
+                if *c == '1' {
+                    let bit: u8 = 1 << (7 - i);
+                    byte |= bit;
+                }
 
                 i += 1;
                 char_iter.next();
-
-                if i == 8 {
-                    break;
-                }
             },
             _ => break
         }
     }
 
-    if i < 8 {
-        return Err(TokenizationError::IncompleteByte);
+    if i != 8 {
+        return Err(TokenizationError::MalformedByte);
     }
 
     Ok(Token::Binary(byte))
@@ -41,7 +40,7 @@ mod tests {
         let code = "0b11001100";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
-            Ok(Token::Binary([true, true, false, false, true, true, false, false]))
+            Ok(Token::Binary(0b11001100))
         );
     }
 
@@ -51,11 +50,8 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::Binary([true, true, true, true, true, true, true, true]))
+            Err(TokenizationError::MalformedByte)
         );
-
-        // Make sure that the iterator advanced correctly
-        assert_eq!(iter.next(), Some('0'));
     }
 
     #[test]
@@ -64,7 +60,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Ok(Token::Binary([true, true, true, true, false, false, false, false]))
+            Ok(Token::Binary(0b11110000))
         );
 
         // Make sure that the iterator advanced correctly
@@ -77,7 +73,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Err(TokenizationError::IncompleteByte)
+            Err(TokenizationError::MalformedByte)
         );
     }
 
@@ -87,7 +83,7 @@ mod tests {
         let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
             parse(&mut iter),
-            Err(TokenizationError::IncompleteByte)
+            Err(TokenizationError::MalformedByte)
         );
     }
 }
