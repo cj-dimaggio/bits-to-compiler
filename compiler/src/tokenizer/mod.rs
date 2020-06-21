@@ -12,7 +12,7 @@ pub enum Token {
     Number(i16),
     Label(String),
     Reference(String),
-    Multiply,
+    Times,
 }
 
 type CharIterator<'a> = itertools::MultiPeek<std::str::Chars<'a>>;
@@ -41,7 +41,6 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
                 continue;
             },
             '"' => string_literal::parse(&mut char_iter)?,
-            '*' => simple_symbol(Token::Multiply, &mut char_iter),
             c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter)?,
             c if c.is_whitespace() => {
                 char_iter.next();
@@ -71,7 +70,7 @@ mod tests {
             "This is a test"
             1234
             Hello_World:
-            0b10001000 * 5
+            TIMES 5 0b10001000
             Hello_World
         "#;
         assert_eq!(
@@ -84,9 +83,9 @@ mod tests {
                 Token::QuotedString(String::from("This is a test")),
                 Token::Number(1234),
                 Token::Label(String::from("Hello_World")),
-                Token::Binary(0b10001000),
-                Token::Multiply,
+                Token::Times,
                 Token::Number(5),
+                Token::Binary(0b10001000),
                 Token::Reference(String::from("Hello_World")),
             ])
         );

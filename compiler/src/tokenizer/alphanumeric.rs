@@ -8,94 +8,54 @@ pub fn is_alphanumeric(c: char) -> bool {
     c.is_numeric() || is_alphabetic(c)
 }
 
-fn get_word(char_iter: &mut CharIterator) -> String {
+fn get_word(char_iter: &mut CharIterator) -> Result<String, TokenizationError> {
     let mut word = String::new();
 
     while let Some(&c) = char_iter.peek() {
         match c {
-            c if is_alphanumeric(c) => word.push(c),
+            c if is_alphanumeric(c) => {
+                word.push(c);
+                char_iter.next();
+            },
             ':' => {
                 word.push(c);
-                break
-            },
-            _ => break
-        }
-    }
-
-    char_iter.reset_peek();
-    word
-}
-
-fn parse_number(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
-    let mut number = String::new();
-
-    while let Some(&c) = char_iter.peek() {
-        match c {
-            c if c.is_numeric() => {
-                number.push(c);
-                char_iter.next();
-            },
-            c if c.is_whitespace() => break,
-            _ => {
-                return Err(TokenizationError::UnexpectedCharacter);
-            }
-        }
-    }
-    let number = number.parse::<i16>().expect("parse_number did not correctly parse a number");
-    Ok(Token::Number(number))
-}
-
-fn parse_label(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
-    let mut identifier = String::new();
-
-    while let Some(&c) = char_iter.peek() {
-        match c {
-            c if is_alphanumeric(c) => {
-                identifier.push(c);
-                char_iter.next();
-            },
-            ':' => {
                 char_iter.next();
                 break
             },
+            c if c.is_whitespace() || c == ';' => break,
             _ => {
                 return Err(TokenizationError::UnexpectedCharacter);
             }
         }
     }
-    Ok(Token::Label(identifier))
+
+    Ok(word)
 }
 
-fn parse_reference(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
-    let mut identifier = String::new();
-
-    while let Some(&c) = char_iter.peek() {
-        match c {
-            c if is_alphanumeric(c) => {
-                identifier.push(c);
-                char_iter.next();
-            },
-            c if c.is_whitespace() => break,
-            _ => {
-                return Err(TokenizationError::UnexpectedCharacter);
-            }
-        }
+fn parse_number(word: String) -> Result<Token, TokenizationError> {
+    if let Ok(number) = word.parse::<i16>() {
+        Ok(Token::Number(number))
+    } else {
+        Err(TokenizationError::UnexpectedCharacter)
     }
-    Ok(Token::Reference(identifier))
 }
 
 pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
-    let word = get_word(char_iter);
+    let mut word = get_word(char_iter)?;
     let first_char = word.chars().next().expect("alphanumeric::parse called at an invalid cursor position");
 
-    match word {
-        word if word.starts_with("0b") => binary_byte::parse(char_iter),
-        _ if first_char.is_numeric() => parse_number(char_iter),
+    match &word.to_lowercase()[..] {
+        "times" => {
+            Ok(Token::Times)
+        },
+        word if word.starts_with("0b") => binary_byte::parse(&mut word.to_string()),
+        _ if first_char.is_numeric() => parse_number(word),
         _ if is_alphabetic(first_char) => {
             if word.ends_with(':') {
-                parse_label(char_iter)
+                word.remove(word.len() - 1);
+                Ok(Token::Label(word))
             } else {
-                parse_reference(char_iter)
+                Ok(Token::Reference(word))
             }
         },
         _ => Err(TokenizationError::UnexpectedCharacter)
