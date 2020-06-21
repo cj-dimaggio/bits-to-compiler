@@ -5,7 +5,7 @@ pub enum TokenizationError {
     UnterminatedStringLiteral
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Token {
     Binary(u8),
     QuotedString(String),

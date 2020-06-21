@@ -19,3 +19,22 @@ impl Instruction for StringLiteral {
         self.0.as_bytes().to_vec()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reflects_binary_literal() {
+        let x = BinaryLiteral(255);
+        assert_eq!(x.byte_len(), 1);
+        assert_eq!(x.compile(), vec![255]);
+    }
+
+    #[test]
+    fn reflects_string_literal() {
+        let x = StringLiteral(String::from("FooBar"));
+        assert_eq!(x.byte_len(), 6);
+        assert_eq!(x.compile(), vec!['F' as u8, 'o' as u8, 'o' as u8, 'B' as u8, 'a' as u8, 'r' as u8]);
+    }
+}

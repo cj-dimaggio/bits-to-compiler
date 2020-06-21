@@ -30,7 +30,7 @@ pub fn compile(input_file: File, output_file: File) {
             continue;
         }
 
-        let instruction = instructions::parse(tokens).unwrap();
+        let instruction = instructions::extract_instruction(&tokens).unwrap();
         location += instruction.byte_len();
         instructions.push(instruction);
     }
