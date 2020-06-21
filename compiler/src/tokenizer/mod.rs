@@ -22,11 +22,6 @@ mod string_literal;
 mod alphanumeric;
 mod comment;
 
-fn simple_symbol(token: Token, char_iter: &mut CharIterator) -> Token {
-    char_iter.next();
-    token
-}
-
 pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
     let mut tokens = Vec::<Token>::new();
     let mut char_iter = contents.chars().peekable();
