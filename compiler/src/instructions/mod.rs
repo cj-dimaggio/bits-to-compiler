@@ -21,6 +21,4 @@ pub fn parse(tokens: Vec<Token>) -> Result<Box<dyn Instruction>, SyntaxError> {
         Token::QuotedString(data) => Ok(Box::new(literals::StringLiteral(data.clone()))),
         _ => Err(SyntaxError::UnsupportedStartingToken)
     }
-
-
 }

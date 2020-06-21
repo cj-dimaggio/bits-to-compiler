@@ -70,8 +70,9 @@ mod tests {
             0b11111111 ; Can have 1s and 0s in comment
             "This is a test"
             1234
-            Hello_World
+            Hello_World:
             0b10001000 * 5
+            Hello_World
         "#;
         assert_eq!(
             tokenize(String::from(code)),
@@ -82,10 +83,11 @@ mod tests {
                 Token::Binary(0b11111111),
                 Token::QuotedString(String::from("This is a test")),
                 Token::Number(1234),
-                Token::Reference(String::from("Hello_World")),
+                Token::Label(String::from("Hello_World")),
                 Token::Binary(0b10001000),
                 Token::Multiply,
                 Token::Number(5),
+                Token::Reference(String::from("Hello_World")),
             ])
         );
     }

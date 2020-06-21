@@ -17,7 +17,7 @@ pub fn compile(input_file: File, output_file: File) {
         let mut tokens = tokenizer::tokenize(line).unwrap();
 
         // Handle label
-        if let Some(tokenizer::Token::Identifier(label)) = tokens.get(0) {
+        if let Some(tokenizer::Token::Label(label)) = tokens.get(0) {
             if let Some(_) = labels.insert(label.clone(), location) {
                 println!("label {} defined more than once", label)
             }

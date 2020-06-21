@@ -14,6 +14,10 @@ fn get_word(char_iter: &mut CharIterator) -> String {
     while let Some(&c) = char_iter.peek() {
         match c {
             c if is_alphanumeric(c) => word.push(c),
+            ':' => {
+                word.push(c);
+                break
+            },
             _ => break
         }
     }
@@ -41,7 +45,28 @@ fn parse_number(char_iter: &mut CharIterator) -> Result<Token, TokenizationError
     Ok(Token::Number(number))
 }
 
-fn parse_identifier(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
+fn parse_label(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
+    let mut identifier = String::new();
+
+    while let Some(&c) = char_iter.peek() {
+        match c {
+            c if is_alphanumeric(c) => {
+                identifier.push(c);
+                char_iter.next();
+            },
+            ':' => {
+                char_iter.next();
+                break
+            },
+            _ => {
+                return Err(TokenizationError::UnexpectedCharacter);
+            }
+        }
+    }
+    Ok(Token::Label(identifier))
+}
+
+fn parse_reference(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut identifier = String::new();
 
     while let Some(&c) = char_iter.peek() {
@@ -66,7 +91,13 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     match word {
         word if word.starts_with("0b") => binary_byte::parse(char_iter),
         _ if first_char.is_numeric() => parse_number(char_iter),
-        _ if is_alphabetic(first_char) => parse_identifier(char_iter),
+        _ if is_alphabetic(first_char) => {
+            if word.ends_with(':') {
+                parse_label(char_iter)
+            } else {
+                parse_reference(char_iter)
+            }
+        },
         _ => Err(TokenizationError::UnexpectedCharacter)
     }
 }
@@ -94,11 +125,20 @@ mod tests {
     }
 
     #[test]
-    fn extracts_identifier() {
+    fn parse_reference() {
         let code = "foo_bar2";
         assert_eq!(
             parse(&mut itertools::multipeek(code.chars())),
             Ok(Token::Reference(String::from("foo_bar2")))
+        );
+    }
+
+    #[test]
+    fn parse_label() {
+        let code = "foo_bar:";
+        assert_eq!(
+            parse(&mut itertools::multipeek(code.chars())),
+            Ok(Token::Label(String::from("foo_bar")))
         );
     }
 
