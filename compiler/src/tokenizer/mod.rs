@@ -15,7 +15,7 @@ pub enum Token {
     Times,
 }
 
-type CharIterator<'a> = itertools::MultiPeek<std::str::Chars<'a>>;
+type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;
 
 mod binary_byte;
 mod string_literal;
@@ -29,12 +29,9 @@ fn simple_symbol(token: Token, char_iter: &mut CharIterator) -> Token {
 
 pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
     let mut tokens = Vec::<Token>::new();
-    let mut char_iter = itertools::multipeek(contents.chars());
+    let mut char_iter = contents.chars().peekable();
 
     while let Some(&c) = char_iter.peek() {
-        // Make sure our parsers can grab the character we just pulled
-        char_iter.reset_peek();
-
         tokens.push(match c {
             ';' => { 
                 comment::parse(&mut char_iter)?;
@@ -48,9 +45,6 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
             },
             _ => return Err(TokenizationError::UnexpectedCharacter)
         });
-
-        // Cleanup after any of our parsers
-        char_iter.reset_peek();
     }
 
     Ok(tokens)

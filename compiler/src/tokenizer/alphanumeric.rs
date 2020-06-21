@@ -70,7 +70,7 @@ mod tests {
     fn extracts_binary_byte() {
         let code = "0b11001100";
         assert_eq!(
-            parse(&mut itertools::multipeek(code.chars())),
+            parse(&mut code.chars().peekable()),
             Ok(Token::Binary(0b11001100))
         );
     }
@@ -79,7 +79,7 @@ mod tests {
     fn extracts_number() {
         let code = "1203";
         assert_eq!(
-            parse(&mut itertools::multipeek(code.chars())),
+            parse(&mut code.chars().peekable()),
             Ok(Token::Number(1203))
         );
     }
@@ -88,7 +88,7 @@ mod tests {
     fn parse_reference() {
         let code = "foo_bar2";
         assert_eq!(
-            parse(&mut itertools::multipeek(code.chars())),
+            parse(&mut code.chars().peekable()),
             Ok(Token::Reference(String::from("foo_bar2")))
         );
     }
@@ -97,7 +97,7 @@ mod tests {
     fn parse_label() {
         let code = "foo_bar:";
         assert_eq!(
-            parse(&mut itertools::multipeek(code.chars())),
+            parse(&mut code.chars().peekable()),
             Ok(Token::Label(String::from("foo_bar")))
         );
     }
@@ -106,7 +106,7 @@ mod tests {
     fn detects_invalid_number() {
         let code = "120R3";
         assert_eq!(
-            parse(&mut itertools::multipeek(code.chars())),
+            parse(&mut code.chars().peekable()),
             Err(TokenizationError::UnexpectedCharacter)
         );
     }
@@ -115,7 +115,7 @@ mod tests {
     fn detects_invalid_identifier() {
         let code = "foo_&bar";
         assert_eq!(
-            parse(&mut itertools::multipeek(code.chars())),
+            parse(&mut code.chars().peekable()),
             Err(TokenizationError::UnexpectedCharacter)
         );
     }

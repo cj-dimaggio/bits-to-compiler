@@ -26,9 +26,8 @@ mod tests {
     #[test]
     fn extracts_comment() {
         let code = ";hello world";
-        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
-            parse(&mut iter),
+            parse(&mut code.chars().peekable()),
             Ok(())
         );
     }
@@ -36,9 +35,8 @@ mod tests {
     #[test]
     fn extracts_comment_with_newline() {
         let code = ";hello world\ntest";
-        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
-            parse(&mut iter),
+            parse(&mut code.chars().peekable()),
             Ok(())
         );
     }

@@ -3,6 +3,3 @@ name = "compiler"
 version = "0.1.0"
 authors = ["CJ DiMaggio <cjssawa@gmail.com>"]
 edition = "2018"
-
-[dependencies]
-itertools = "0.9"

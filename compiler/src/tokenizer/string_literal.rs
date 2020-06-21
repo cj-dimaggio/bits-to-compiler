@@ -26,9 +26,8 @@ mod tests {
     #[test]
     fn extract_string_literal() {
         let code = r#""FooBar""#;
-        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
-            parse(&mut iter),
+            parse(&mut code.chars().peekable()),
             Ok(Token::QuotedString(String::from("FooBar")))
         );
     }
@@ -36,9 +35,8 @@ mod tests {
     #[test]
     fn catches_unclosed_string_literal() {
         let code = r#""FooBar"#;
-        let mut iter = itertools::multipeek(code.chars());
         assert_eq!(
-            parse(&mut iter),
+            parse(&mut code.chars().peekable()),
             Err(TokenizationError::UnterminatedStringLiteral)
         );
     }
