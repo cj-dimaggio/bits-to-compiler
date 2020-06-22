@@ -2,7 +2,8 @@
 pub enum TokenizationError {
     UnexpectedCharacter,
     MalformedByte,
-    UnterminatedStringLiteral
+    UnterminatedStringLiteral,
+    InvalidHex
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]

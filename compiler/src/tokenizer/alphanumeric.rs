@@ -40,6 +40,26 @@ fn parse_number(word: String) -> Result<Token, TokenizationError> {
     }
 }
 
+fn parse_hex(word: String) -> Result<Token, TokenizationError> {
+    debug_assert_eq!(word.starts_with("0x"), true);
+    let without_prefix = word.trim_start_matches("0x");
+    if without_prefix.len() == 2 {
+        if let Ok(byte) = u8::from_str_radix(without_prefix, 16) {
+            return Ok(Token::Binary(byte));
+        } else {
+            return Err(TokenizationError::InvalidHex);
+        }
+    } else if without_prefix.len() == 4 {
+        if let Ok(number) = i16::from_str_radix(without_prefix, 16) {
+            return Ok(Token::Number(number));
+        } else {
+            return Err(TokenizationError::InvalidHex);
+        }
+    } else {
+        Err(TokenizationError::InvalidHex)
+    }
+}
+
 pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let mut word = get_word(char_iter)?;
     let first_char = word.chars().next().expect("alphanumeric::parse called at an invalid cursor position");
@@ -47,7 +67,8 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     match &word.to_lowercase()[..] {
         "times" => Ok(Token::Times),
         "offset" => Ok(Token::Offset),
-        word if word.starts_with("0b") => binary_byte::parse(&mut word.to_string()),
+        word if word.starts_with("0b") => binary_byte::parse(word.to_string()),
+        word if word.starts_with("0x") => parse_hex(word.to_string()),
         _ if first_char.is_numeric() => parse_number(word),
         _ if is_alphabetic(first_char) => {
             if word.ends_with(':') {
@@ -116,6 +137,24 @@ mod tests {
         assert_eq!(
             parse(&mut code.chars().peekable()),
             Err(TokenizationError::UnexpectedCharacter)
+        );
+    }
+
+    #[test]
+    fn parses_hex_into_a_byte() {
+        let code = "0xF1";
+        assert_eq!(
+            parse(&mut code.chars().peekable()),
+            Ok(Token::Binary(0xF1))
+        );
+    }
+
+    #[test]
+    fn parses_hex_into_a_number() {
+        let code = "0x11F2";
+        assert_eq!(
+            parse(&mut code.chars().peekable()),
+            Ok(Token::Number(0x11F2))
         );
     }
 }

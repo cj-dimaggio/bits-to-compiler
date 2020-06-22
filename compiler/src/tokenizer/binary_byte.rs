@@ -1,14 +1,12 @@
 use super::*;
 
-pub fn parse(word: &mut String) -> Result<Token, TokenizationError> {
+pub fn parse(word: String) -> Result<Token, TokenizationError> {
     let mut byte = 0;
     let mut i = 0;
 
-    // Skip the 0b prefix
-    assert_eq!(word.remove(0), '0');
-    assert_eq!(word.remove(0), 'b');
+    debug_assert_eq!(word.starts_with("0b"), true);
 
-    for c in word.chars() {
+    for c in word.trim_start_matches("0b").chars() {
         match c {
             '1' | '0' => {
                 if c == '1' {
@@ -38,7 +36,7 @@ mod tests {
     fn extracts_one_binary_byte() {
         let code = "0b11001100";
         assert_eq!(
-            parse(&mut String::from(code)),
+            parse(String::from(code)),
             Ok(Token::Binary(0b11001100))
         );
     }
@@ -47,7 +45,7 @@ mod tests {
     fn extracts_one_binary_byte_from_longer() {
         let code = "0b1111111100000000";
         assert_eq!(
-            parse(&mut String::from(code)),
+            parse(String::from(code)),
             Err(TokenizationError::MalformedByte)
         );
     }
@@ -56,7 +54,7 @@ mod tests {
     fn extracts_one_binary_byte_with_whitespace() {
         let code = "0b11110000 ";
         assert_eq!(
-            parse(&mut String::from(code)),
+            parse(String::from(code)),
             Ok(Token::Binary(0b11110000))
         );
     }
@@ -65,7 +63,7 @@ mod tests {
     fn errors_on_incomplete_binary() {
         let code = "0b1010";
         assert_eq!(
-            parse(&mut String::from(code)),
+            parse(String::from(code)),
             Err(TokenizationError::MalformedByte)
         );
     }
@@ -74,7 +72,7 @@ mod tests {
     fn errors_on_interrupted_binary() {
         let code = "0b1010;1010";
         assert_eq!(
-            parse(&mut String::from(code)),
+            parse(String::from(code)),
             Err(TokenizationError::MalformedByte)
         );
     }

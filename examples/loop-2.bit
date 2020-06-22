@@ -1,5 +1,5 @@
 0b10111110 ; MOV SI (0xB8 + 6)
-OFFSET to_be_printed 31744
+OFFSET to_be_printed 0x7C00
 0b10110100 ; MOV AH
 0b00001110 ; 0x0E
 0b10101100 ; load byte from SI memory location into AL 
@@ -13,5 +13,11 @@ OFFSET to_be_printed 31744
 0b11110111 ; 247, backwards 9 bytes
 0b11111010 ; CLI
 0b11110100 ; HLT
+
 to_be_printed:
-"Hello, world!"
+    "Hello, world!"
+
+TIMES 481 0b00000000
+
+0b01010101 ; Boot sector magic
+0b10101010
