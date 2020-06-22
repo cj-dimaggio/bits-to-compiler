@@ -1,0 +1,17 @@
+0b10111110 ; MOV SI (0xB8 + 6)
+OFFSET to_be_printed 31744
+0b10110100 ; MOV AH
+0b00001110 ; 0x0E
+0b10101100 ; load byte from SI memory location into AL 
+0b00001000 ; OR
+0b11000000 ; Mod = r/m is treated as a second "reg" field (ll). Reg = AL (000). R/M = AL (00)
+0b01110100 ; JZ (jump short relatively)
+0b00000100 ; jump forward 4 bytes if AL is zero
+0b11001101 ; INT
+0b00010000 ; 10h
+0b11101011 ; JMP
+0b11110111 ; 247, backwards 9 bytes
+0b11111010 ; CLI
+0b11110100 ; HLT
+to_be_printed:
+"Hello, world!"

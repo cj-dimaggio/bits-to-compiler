@@ -45,9 +45,8 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     let first_char = word.chars().next().expect("alphanumeric::parse called at an invalid cursor position");
 
     match &word.to_lowercase()[..] {
-        "times" => {
-            Ok(Token::Times)
-        },
+        "times" => Ok(Token::Times),
+        "offset" => Ok(Token::Offset),
         word if word.starts_with("0b") => binary_byte::parse(&mut word.to_string()),
         _ if first_char.is_numeric() => parse_number(word),
         _ if is_alphabetic(first_char) => {

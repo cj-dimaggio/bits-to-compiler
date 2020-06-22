@@ -13,6 +13,7 @@ pub enum Token {
     Label(String),
     Reference(String),
     Times,
+    Offset,
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;

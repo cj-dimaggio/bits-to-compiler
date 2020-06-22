@@ -1,10 +1,12 @@
 use super::tokenizer::Token;
+use std::collections::HashMap;
 
 #[macro_use]
 mod validate;
 
 mod literals;
 mod times;
+mod offset;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SyntaxError {
@@ -15,7 +17,7 @@ pub enum SyntaxError {
 
 pub trait Instruction {
     fn byte_len(&self) -> u16;
-    fn compile(&self) -> Vec<u8>;
+    fn compile(&self, labels: &HashMap::<String, u16>) -> Vec<u8>;
 }
 
 pub fn extract_instruction(tokens: &Vec<Token>) -> Result<Box<dyn Instruction>, SyntaxError> {
@@ -29,6 +31,8 @@ pub fn extract_instruction(tokens: &Vec<Token>) -> Result<Box<dyn Instruction>, 
             validate_syntax!(tokens.get(1), None)?;
             Ok(Box::new(literals::StringLiteral(data.clone())))
         },
+        Token::Times => Ok(Box::new(times::TimesDirective::new(tokens)?)),
+        Token::Offset => Ok(Box::new(offset::OffsetDirective::new(tokens)?)),
         _ => Err(SyntaxError::UnsupportedStartingToken)
     }
 }

@@ -18,6 +18,7 @@ macro_rules! validate_syntax {
 mod tests {
     use super::super::SyntaxError;
 
+    #[allow(dead_code)]
     enum ForTesting {
         Foo,
         Bar,
