@@ -73,6 +73,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         "int" => Ok(Token::Interrupt),
         "org" => Ok(Token::Org),
         "mov" => Ok(Token::Mov),
+        "or" => Ok(Token::Or),
         "al" | "cl" | "dl" | "bl" | "ah" | "ch" | "dh" | "bh" => Ok(Token::Register8(word)),
         "ax" | "cx" | "dx" | "bx" | "sp" | "bp" | "si" | "di" => Ok(Token::Register16(word)),
         word if word.starts_with("0b") => binary_byte::parse(word.to_string()),

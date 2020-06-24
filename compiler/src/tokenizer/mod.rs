@@ -23,6 +23,7 @@ pub enum Token {
     Register8(String),
     Register16(String),
     Mov,
+    Or,
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;

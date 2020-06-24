@@ -1,20 +1,21 @@
 org 0x7C00
 
-mov si to_be_printed
-mov ah 0x0E
-lodsb
-0b00001000 ; OR
-0b11000000 ; Mod = r/m is treated as a second "reg" field (ll). Reg = AL (000). R/M = AL (00)
-0b01110100 ; JZ (jump short relatively)
-0b00000100 ; jump forward 4 bytes if AL is zero
-int 0x10
-0b11101011 ; JMP
-0b11110111 ; 247, backwards 9 bytes
-cli
-hlt
+boot:
+    mov si hello
+    mov ah 0x0E
+loop:
+    lodsb
+    or al al
+    0b01110100 ; JZ (jump short relatively)
+    0b00000100 ; jump forward 4 bytes if AL is zero
+    int 0x10
+    0b11101011 ; JMP
+    0b11110111 ; 247, backwards 9 bytes
+halt:
+    cli
+    hlt
 
-to_be_printed:
-    "Hello, world!"
+hello: "Hello, world!"
 
 times 481 0b00000000
 

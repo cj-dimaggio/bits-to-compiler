@@ -9,6 +9,8 @@ mod times;
 pub mod directives;
 mod simple;
 mod mov;
+mod utils;
+mod or;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SyntaxError {
@@ -49,6 +51,7 @@ pub fn extract_instruction(tokens: &Vec<Token>) -> Result<Box<dyn Instruction>, 
         Token::Times => Ok(Box::new(times::TimesDirective::new(tokens)?)),
         Token::Offset => Ok(Box::new(directives::OffsetDirective::new(tokens)?)),
         Token::Mov => Ok(Box::new(mov::MovInstruction::new(tokens)?)),
+        Token::Or => Ok(Box::new(or::OrInstruction::new(tokens)?)),
         _ => Err(SyntaxError::UnsupportedStartingToken)
     }
 }
