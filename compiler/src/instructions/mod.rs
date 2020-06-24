@@ -7,6 +7,7 @@ mod validate;
 mod literals;
 mod times;
 mod offset;
+mod simple;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SyntaxError {
@@ -30,6 +31,18 @@ pub fn extract_instruction(tokens: &Vec<Token>) -> Result<Box<dyn Instruction>, 
         Token::QuotedString(data) => {
             validate_syntax!(tokens.get(1), None)?;
             Ok(Box::new(literals::StringLiteral(data.clone())))
+        },
+        Token::Cli => {
+            validate_syntax!(tokens.get(1), None)?;
+            Ok(Box::new(simple::CliInstruction))
+        },
+        Token::Hlt => {
+            validate_syntax!(tokens.get(1), None)?;
+            Ok(Box::new(simple::HltInstruction))
+        },
+        Token::Lodsb => {
+            validate_syntax!(tokens.get(1), None)?;
+            Ok(Box::new(simple::LodsbInstruction))
         },
         Token::Times => Ok(Box::new(times::TimesDirective::new(tokens)?)),
         Token::Offset => Ok(Box::new(offset::OffsetDirective::new(tokens)?)),

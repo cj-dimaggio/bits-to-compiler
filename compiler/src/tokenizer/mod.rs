@@ -15,6 +15,9 @@ pub enum Token {
     Reference(String),
     Times,
     Offset,
+    Cli,
+    Hlt,
+    Lodsb,
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;

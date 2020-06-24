@@ -67,6 +67,9 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     match &word.to_lowercase()[..] {
         "times" => Ok(Token::Times),
         "offset" => Ok(Token::Offset),
+        "cli" => Ok(Token::Cli),
+        "hlt" => Ok(Token::Hlt),
+        "lodsb" => Ok(Token::Lodsb),
         word if word.starts_with("0b") => binary_byte::parse(word.to_string()),
         word if word.starts_with("0x") => parse_hex(word.to_string()),
         _ if first_char.is_numeric() => parse_number(word),
