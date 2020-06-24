@@ -1,23 +1,24 @@
-ORG 0x7C00
+org 0x7C00
+
 0b10111110 ; MOV SI (0xB8 + 6)
-OFFSET to_be_printed 0
+offset to_be_printed 0
 0b10110100 ; MOV AH
 0b00001110 ; 0x0E
-LODSB
+lodsb
 0b00001000 ; OR
 0b11000000 ; Mod = r/m is treated as a second "reg" field (ll). Reg = AL (000). R/M = AL (00)
 0b01110100 ; JZ (jump short relatively)
 0b00000100 ; jump forward 4 bytes if AL is zero
-INT 0x10
+int 0x10
 0b11101011 ; JMP
 0b11110111 ; 247, backwards 9 bytes
-CLI
-HLT
+cli
+hlt
 
 to_be_printed:
     "Hello, world!"
 
-TIMES 481 0b00000000
+times 481 0b00000000
 
 0b01010101 ; Boot sector magic
 0b10101010
