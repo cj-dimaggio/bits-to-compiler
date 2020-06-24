@@ -8,7 +8,7 @@ mod instructions;
 pub fn compile(input_file: File, output_file: File) {
     let reader = BufReader::new(input_file);
     let mut writer = BufWriter::new(output_file);
-    let mut instructions = Vec::<Box<dyn instructions::Instruction>>::new();
+    let mut instructs = Vec::<Box<dyn instructions::Instruction>>::new();
     let mut labels = HashMap::<String, u16>::new();
     let mut location: u16 = 0;
 
@@ -30,12 +30,19 @@ pub fn compile(input_file: File, output_file: File) {
             continue;
         }
 
+        // Slightly unique behavior here
+        if let Some(tokenizer::Token::Org) = tokens.get(0) {
+            let org = instructions::directives::OrgDirective::new(&tokens).unwrap();
+            location = org.0;
+            continue;
+        }
+
         let instruction = instructions::extract_instruction(&tokens).unwrap();
         location += instruction.byte_len();
-        instructions.push(instruction);
+        instructs.push(instruction);
     }
 
-    for i in instructions {
+    for i in instructs {
         if let Err(e) = writer.write(&i.compile(&labels)) {
             println!("Unable to write to output: {}", e);
             return;

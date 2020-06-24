@@ -6,7 +6,7 @@ mod validate;
 
 mod literals;
 mod times;
-mod offset;
+pub mod directives;
 mod simple;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -44,8 +44,9 @@ pub fn extract_instruction(tokens: &Vec<Token>) -> Result<Box<dyn Instruction>, 
             validate_syntax!(tokens.get(1), None)?;
             Ok(Box::new(simple::LodsbInstruction))
         },
+        Token::Interrupt => Ok(Box::new(simple::InterruptInstruction::new(tokens)?)),
         Token::Times => Ok(Box::new(times::TimesDirective::new(tokens)?)),
-        Token::Offset => Ok(Box::new(offset::OffsetDirective::new(tokens)?)),
+        Token::Offset => Ok(Box::new(directives::OffsetDirective::new(tokens)?)),
         _ => Err(SyntaxError::UnsupportedStartingToken)
     }
 }

@@ -18,6 +18,8 @@ pub enum Token {
     Cli,
     Hlt,
     Lodsb,
+    Interrupt,
+    Org,
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;

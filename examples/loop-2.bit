@@ -1,5 +1,6 @@
+ORG 0x7C00
 0b10111110 ; MOV SI (0xB8 + 6)
-OFFSET to_be_printed 0x7C00
+OFFSET to_be_printed 0
 0b10110100 ; MOV AH
 0b00001110 ; 0x0E
 LODSB
@@ -7,8 +8,7 @@ LODSB
 0b11000000 ; Mod = r/m is treated as a second "reg" field (ll). Reg = AL (000). R/M = AL (00)
 0b01110100 ; JZ (jump short relatively)
 0b00000100 ; jump forward 4 bytes if AL is zero
-0b11001101 ; INT
-0b00010000 ; 10h
+INT 0x10
 0b11101011 ; JMP
 0b11110111 ; 247, backwards 9 bytes
 CLI

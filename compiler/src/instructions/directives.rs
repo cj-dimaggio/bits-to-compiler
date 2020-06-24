@@ -32,6 +32,17 @@ impl Instruction for OffsetDirective {
     }
 }
 
+pub struct OrgDirective(pub u16);
+
+impl OrgDirective {
+    pub fn new(tokens: &Vec<Token>) -> Result<OrgDirective, SyntaxError> {
+        validate_syntax!(tokens.get(0), Some(Token::Org))?;
+        let location = validate_syntax!(tokens.get(1), Some(Token::Number(x)) => *x )?;
+        validate_syntax!(tokens.get(3), None)?;
+        Ok(OrgDirective(location as u16))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
