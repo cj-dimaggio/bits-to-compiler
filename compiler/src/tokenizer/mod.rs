@@ -20,6 +20,9 @@ pub enum Token {
     Lodsb,
     Interrupt,
     Org,
+    Register8(String),
+    Register16(String),
+    Mov,
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;

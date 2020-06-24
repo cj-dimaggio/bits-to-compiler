@@ -1,9 +1,7 @@
 org 0x7C00
 
-0b10111110 ; MOV SI (0xB8 + 6)
-offset to_be_printed 0
-0b10110100 ; MOV AH
-0b00001110 ; 0x0E
+mov si to_be_printed
+mov ah 0x0E
 lodsb
 0b00001000 ; OR
 0b11000000 ; Mod = r/m is treated as a second "reg" field (ll). Reg = AL (000). R/M = AL (00)
