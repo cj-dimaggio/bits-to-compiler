@@ -72,3 +72,25 @@ impl Instruction for MovInstruction {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mov_8_bit_number() {
+        let x = MovInstruction::new(&vec![Token::Mov, Token::Register8("ah".to_string()), Token::Binary(0x55)]).unwrap();
+        assert_eq!(x.byte_len(), 2);
+        assert_eq!(x.compile(&HashMap::<String, u16>::new()), vec![0xB4, 0x55]);
+    }
+
+    #[test]
+    fn mov_16_bit_reference() {
+        let mut labels = HashMap::<String, u16>::new();
+        labels.insert("foobar".to_string(), 0x2468);
+        let x = MovInstruction::new(&vec![Token::Mov, Token::Register16("dx".to_string()), Token::Reference("foobar".to_string())]).unwrap();
+        assert_eq!(x.byte_len(), 3);
+        assert_eq!(x.compile(&labels), vec![0xBa, 0x68, 0x24]);
+    }
+}
+

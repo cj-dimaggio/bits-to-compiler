@@ -1,3 +1,4 @@
+; /usr/local/opt/binutils/bin/gobjdump -b binary -mi386 -Maddr16,data16 -D examples/example-loop.bin
 10111110 ; MOV SI (0xB8 + 6)
 10010000 ; 400 + 0x7C00 offset
 01111101 ; second byte of above
