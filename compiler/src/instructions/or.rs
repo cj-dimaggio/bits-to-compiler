@@ -35,11 +35,11 @@ impl Instruction for OrInstruction {
     fn compile(&self, _labels: &HashMap::<String, u16>) -> Vec<u8> {
 
         // We only handle two register fields for now
-        let _mod = 0b11000000;
+        let mod_ = 0b11000000;
         let reg = utils::register_value(&self.operand_1) << 3;
         let r_m = utils::register_value(&self.operand_2);
 
-        vec![0x08, _mod | reg | r_m]
+        vec![0x08, mod_ | reg | r_m]
     }
 }
 

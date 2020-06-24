@@ -14,7 +14,7 @@ pub fn compile(input_file: File, output_file: File) {
 
     for line in reader.lines() {
         let line = line.expect("Could not read from file");
-        let mut tokens = tokenizer::tokenize(line).unwrap();
+        let mut tokens = tokenizer::tokenize(line, location).unwrap();
 
         // Handle label
         if let Some(tokenizer::Token::Label(label)) = tokens.get(0) {

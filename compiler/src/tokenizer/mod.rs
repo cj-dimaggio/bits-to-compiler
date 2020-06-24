@@ -24,6 +24,8 @@ pub enum Token {
     Register16(String),
     Mov,
     Or,
+    Jz(u16), // Keep track of token's binary position
+    Jmp(u16), // Keep track of token's binary position
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;
@@ -33,7 +35,7 @@ mod string_literal;
 mod alphanumeric;
 mod comment;
 
-pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
+pub fn tokenize(contents: String, current_location: u16) -> Result<Vec<Token>, TokenizationError> {
     let mut tokens = Vec::<Token>::new();
     let mut char_iter = contents.chars().peekable();
 
@@ -44,7 +46,7 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
                 continue;
             },
             '"' => string_literal::parse(&mut char_iter)?,
-            c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter)?,
+            c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter, current_location)?,
             c if c.is_whitespace() => {
                 char_iter.next();
                 continue;
@@ -74,7 +76,7 @@ mod tests {
             Hello_World
         "#;
         assert_eq!(
-            tokenize(String::from(code)),
+            tokenize(String::from(code), 0),
             Ok(vec![
                 Token::Binary(0b11110000),
                 Token::Binary(0b00000001),
@@ -97,7 +99,7 @@ mod tests {
             =0b11110000 ; Example of a comment
         ";
         assert_eq!(
-            tokenize(String::from(code)),
+            tokenize(String::from(code), 0),
             Err(TokenizationError::UnexpectedCharacter)
         );
 
@@ -105,7 +107,7 @@ mod tests {
             0b1111; Example of a comment
         ";
         assert_eq!(
-            tokenize(String::from(code)),
+            tokenize(String::from(code), 0),
             Err(TokenizationError::MalformedByte)
         );
     }

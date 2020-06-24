@@ -11,6 +11,7 @@ mod simple;
 mod mov;
 mod utils;
 mod or;
+mod jump;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SyntaxError {
@@ -52,6 +53,8 @@ pub fn extract_instruction(tokens: &Vec<Token>) -> Result<Box<dyn Instruction>, 
         Token::Offset => Ok(Box::new(directives::OffsetDirective::new(tokens)?)),
         Token::Mov => Ok(Box::new(mov::MovInstruction::new(tokens)?)),
         Token::Or => Ok(Box::new(or::OrInstruction::new(tokens)?)),
+        Token::Jz(_) => Ok(Box::new(jump::JzInstruction::new(tokens)?)),
+        Token::Jmp(_) => Ok(Box::new(jump::JmpInstruction::new(tokens)?)),
         _ => Err(SyntaxError::UnsupportedStartingToken)
     }
 }

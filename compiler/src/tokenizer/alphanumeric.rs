@@ -60,7 +60,7 @@ fn parse_hex(word: String) -> Result<Token, TokenizationError> {
     }
 }
 
-pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
+pub fn parse(char_iter: &mut CharIterator, current_location: u16) -> Result<Token, TokenizationError> {
     let mut word = get_word(char_iter)?;
     let first_char = word.chars().next().expect("alphanumeric::parse called at an invalid cursor position");
 
@@ -74,6 +74,8 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
         "org" => Ok(Token::Org),
         "mov" => Ok(Token::Mov),
         "or" => Ok(Token::Or),
+        "jz" => Ok(Token::Jz(current_location)),
+        "jmp" => Ok(Token::Jmp(current_location)),
         "al" | "cl" | "dl" | "bl" | "ah" | "ch" | "dh" | "bh" => Ok(Token::Register8(word)),
         "ax" | "cx" | "dx" | "bx" | "sp" | "bp" | "si" | "di" => Ok(Token::Register16(word)),
         word if word.starts_with("0b") => binary_byte::parse(word.to_string()),
@@ -99,7 +101,7 @@ mod tests {
     fn extracts_binary_byte() {
         let code = "0b11001100";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Ok(Token::Binary(0b11001100))
         );
     }
@@ -108,7 +110,7 @@ mod tests {
     fn extracts_number() {
         let code = "1203";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Ok(Token::Number(1203))
         );
     }
@@ -117,7 +119,7 @@ mod tests {
     fn parse_reference() {
         let code = "foo_bar2";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Ok(Token::Reference(String::from("foo_bar2")))
         );
     }
@@ -126,7 +128,7 @@ mod tests {
     fn parse_label() {
         let code = "foo_bar:";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Ok(Token::Label(String::from("foo_bar")))
         );
     }
@@ -135,7 +137,7 @@ mod tests {
     fn detects_invalid_number() {
         let code = "120R3";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Err(TokenizationError::UnexpectedCharacter)
         );
     }
@@ -144,7 +146,7 @@ mod tests {
     fn detects_invalid_identifier() {
         let code = "foo_&bar";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Err(TokenizationError::UnexpectedCharacter)
         );
     }
@@ -153,7 +155,7 @@ mod tests {
     fn parses_hex_into_a_byte() {
         let code = "0xF1";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Ok(Token::Binary(0xF1))
         );
     }
@@ -162,7 +164,7 @@ mod tests {
     fn parses_hex_into_a_number() {
         let code = "0x11F2";
         assert_eq!(
-            parse(&mut code.chars().peekable()),
+            parse(&mut code.chars().peekable(), 0),
             Ok(Token::Number(0x11F2))
         );
     }

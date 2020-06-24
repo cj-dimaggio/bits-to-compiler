@@ -6,11 +6,9 @@ boot:
 loop:
     lodsb
     or al al
-    0b01110100 ; JZ (jump short relatively)
-    0b00000100 ; jump forward 4 bytes if AL is zero
+    jz halt
     int 0x10
-    0b11101011 ; JMP
-    0b11110111 ; 247, backwards 9 bytes
+    jmp loop
 halt:
     cli
     hlt
