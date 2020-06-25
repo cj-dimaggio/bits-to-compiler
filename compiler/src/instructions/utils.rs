@@ -9,6 +9,6 @@ pub fn register_value(reg: &String) -> u8 {
         "ch" | "bp" => 5,
         "dh" | "si" => 6,
         "bh" | "di" => 7,
-        _ => panic!("Invalid eight bit register {}", reg)
+        _ => panic!("Invalid register {}", reg)
     }
 }

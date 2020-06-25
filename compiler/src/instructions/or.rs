@@ -45,8 +45,13 @@ impl Instruction for OrInstruction {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn or_a_register_to_itself() {
+    fn or_a_register_to_another() {
+        let x = OrInstruction::new(&vec![Token::Or, Token::Register8("ah".to_string()), Token::Register8("cl".to_string())]).unwrap();
+        assert_eq!(x.byte_len(), 2);
+        assert_eq!(x.compile(&HashMap::<String, u16>::new()), vec![0x08, 0b11_100_001]);
     }
 }
 
