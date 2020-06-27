@@ -131,4 +131,17 @@ mod tests {
             Err(TokenizationError::MalformedByte)
         );
     }
+
+    #[test]
+    fn reduces_arithmetic() {
+        let code = "TIMES ( 5 * 2 + 8 ) 0b11111111";
+        assert_eq!(
+            tokenize(String::from(code), 0, 0),
+            Ok(vec![
+                Token::Times,
+                Token::Number(18),
+                Token::Binary(0b11111111)
+            ])
+        );
+    }
 }

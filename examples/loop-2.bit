@@ -15,7 +15,7 @@ halt:
 
 hello: "Hello, world!"
 
-times 481 0b00000000
+times ( 510 - ( $ - $$ ) ) 0b00000000
 
 0b01010101 ; Boot sector magic
 0b10101010

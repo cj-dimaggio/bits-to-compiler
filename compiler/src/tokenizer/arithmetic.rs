@@ -24,25 +24,18 @@ fn to_reverse_polish_notation(tokens: &Vec<Token>, range: Range<usize>) -> Resul
     // This is a little funky.
     for i in range {
         let token = tokens[i].clone();
-        println!("\n*****\n{:?}\n{:?}\n*****\n", output_queue, operator_stack);
-        println!("\n{:?}", token);
         match token {
             Token::Number(_) => output_queue.push_back(token),
             _ if is_operator(&token) => {
-                println!("  Operator");
                 while let Some(top) = operator_stack.last() {
-                    println!("    {:?}", top);
                     // All of our operations happen to be left-associative so we don't need to check for it
                     if is_operator(&top) && ((precedence(top) > precedence(&token)) || (precedence(top) == precedence(&token))) {
-                        println!("    Pushing onto output");
                         output_queue.push_back(operator_stack.pop().unwrap());
                     } else {
-                        println!("    breaking");
                         break;
                     }
                 }
 
-                println!("  Putting onto operator stack");
                 operator_stack.push(token)
             },
             Token::OpenParen => operator_stack.push(token),
@@ -72,10 +65,8 @@ fn to_reverse_polish_notation(tokens: &Vec<Token>, range: Range<usize>) -> Resul
 
 fn calculate(inputs: &mut VecDeque<Token>) -> Result<i32, TokenizationError> {
     let mut stack = Vec::<i32>::new();
-    println!("\n\n***Calculate: {:?}***\n", inputs);
 
     while let Some(token) = inputs.pop_front() {
-        println!("Token: {:?} - Stack: {:?}", token, stack);
         match token {
             Token::Number(n) => stack.push(n),
             _ if is_operator(&token) => {
@@ -93,7 +84,6 @@ fn calculate(inputs: &mut VecDeque<Token>) -> Result<i32, TokenizationError> {
         }
     }
 
-    println!("Final Stack: {:?}", stack);
     if stack.len() != 1 {
         return Err(TokenizationError::InvalidArithmetic)
     }
@@ -181,7 +171,7 @@ mod tests {
     }
 
     #[test]
-    fn calculates_with_params() {
+    fn calculates_with_parens() {
         assert_eq!(
             perform_calculations(vec![
                 Token::Times,
@@ -200,7 +190,7 @@ mod tests {
             ]),
             Ok(vec![
                 Token::Times,
-                Token::Number(190),
+                Token::Number(80),
                 Token::Binary(0x44),
             ])
         );
