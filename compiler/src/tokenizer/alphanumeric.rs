@@ -33,7 +33,7 @@ fn get_word(char_iter: &mut CharIterator) -> Result<String, TokenizationError> {
 }
 
 fn parse_number(word: String) -> Result<Token, TokenizationError> {
-    if let Ok(number) = word.parse::<i16>() {
+    if let Ok(number) = word.parse::<i32>() {
         Ok(Token::Number(number))
     } else {
         Err(TokenizationError::UnexpectedCharacter)
@@ -50,7 +50,7 @@ fn parse_hex(word: String) -> Result<Token, TokenizationError> {
             return Err(TokenizationError::InvalidHex);
         }
     } else if without_prefix.len() == 4 {
-        if let Ok(number) = i16::from_str_radix(without_prefix, 16) {
+        if let Ok(number) = i32::from_str_radix(without_prefix, 16) {
             return Ok(Token::Number(number));
         } else {
             return Err(TokenizationError::InvalidHex);

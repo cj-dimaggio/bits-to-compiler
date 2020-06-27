@@ -3,14 +3,16 @@ pub enum TokenizationError {
     UnexpectedCharacter,
     MalformedByte,
     UnterminatedStringLiteral,
-    InvalidHex
+    InvalidHex,
+    MismatchedParen,
+    InvalidArithmetic
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Token {
     Binary(u8),
     QuotedString(String),
-    Number(i16),
+    Number(i32),
     Label(String),
     Reference(String),
     Times,
@@ -26,6 +28,11 @@ pub enum Token {
     Or,
     Jz(u16), // Keep track of token's binary position
     Jmp(u16), // Keep track of token's binary position
+    OpenParen,
+    CloseParen,
+    Plus,
+    Minus,
+    Multiply,
 }
 
 type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;
@@ -34,8 +41,15 @@ mod binary_byte;
 mod string_literal;
 mod alphanumeric;
 mod comment;
+mod location;
+mod arithmetic;
 
-pub fn tokenize(contents: String, current_location: u16) -> Result<Vec<Token>, TokenizationError> {
+fn one_char_token(token: Token, char_iter: &mut CharIterator,) -> Token {
+    char_iter.next();
+    token
+}
+
+pub fn tokenize(contents: String, current_location: u16, starting_location: u16) -> Result<Vec<Token>, TokenizationError> {
     let mut tokens = Vec::<Token>::new();
     let mut char_iter = contents.chars().peekable();
 
@@ -46,6 +60,12 @@ pub fn tokenize(contents: String, current_location: u16) -> Result<Vec<Token>, T
                 continue;
             },
             '"' => string_literal::parse(&mut char_iter)?,
+            '$' => location::parse(&mut char_iter, current_location, starting_location)?,
+            '(' => one_char_token(Token::OpenParen, &mut char_iter),
+            ')' => one_char_token(Token::CloseParen, &mut char_iter),
+            '+' => one_char_token(Token::Plus, &mut char_iter),
+            '-' => one_char_token(Token::Minus, &mut char_iter),
+            '*' => one_char_token(Token::Multiply, &mut char_iter),
             c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter, current_location)?,
             c if c.is_whitespace() => {
                 char_iter.next();
@@ -55,7 +75,7 @@ pub fn tokenize(contents: String, current_location: u16) -> Result<Vec<Token>, T
         });
     }
 
-    Ok(tokens)
+    arithmetic::perform_calculations(tokens)
 }
 
 #[cfg(test)]
@@ -76,7 +96,7 @@ mod tests {
             Hello_World
         "#;
         assert_eq!(
-            tokenize(String::from(code), 0),
+            tokenize(String::from(code), 0, 0),
             Ok(vec![
                 Token::Binary(0b11110000),
                 Token::Binary(0b00000001),
@@ -99,7 +119,7 @@ mod tests {
             =0b11110000 ; Example of a comment
         ";
         assert_eq!(
-            tokenize(String::from(code), 0),
+            tokenize(String::from(code), 0, 0),
             Err(TokenizationError::UnexpectedCharacter)
         );
 
@@ -107,7 +127,7 @@ mod tests {
             0b1111; Example of a comment
         ";
         assert_eq!(
-            tokenize(String::from(code), 0),
+            tokenize(String::from(code), 0, 0),
             Err(TokenizationError::MalformedByte)
         );
     }

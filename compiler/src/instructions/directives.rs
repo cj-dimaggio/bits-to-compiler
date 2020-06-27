@@ -3,7 +3,7 @@ use literals::ReferenceLiteral;
 use super::super::tokenizer::Token;
 
 pub struct OffsetDirective{
-    amount: i16,
+    amount: i32,
     reference: ReferenceLiteral,
 }
 

@@ -10,15 +10,16 @@ pub fn compile(input_file: File, output_file: File) {
     let mut writer = BufWriter::new(output_file);
     let mut instructs = Vec::<Box<dyn instructions::Instruction>>::new();
     let mut labels = HashMap::<String, u16>::new();
-    let mut location: u16 = 0;
+    let mut starting_location: u16 = 0;
+    let mut current_location: u16 = 0;
 
     for line in reader.lines() {
         let line = line.expect("Could not read from file");
-        let mut tokens = tokenizer::tokenize(line, location).unwrap();
+        let mut tokens = tokenizer::tokenize(line, current_location, starting_location).unwrap();
 
         // Handle label
         if let Some(tokenizer::Token::Label(label)) = tokens.get(0) {
-            if let Some(_) = labels.insert(label.clone(), location) {
+            if let Some(_) = labels.insert(label.clone(), current_location) {
                 println!("label {} defined more than once", label)
             }
 
@@ -33,12 +34,13 @@ pub fn compile(input_file: File, output_file: File) {
         // Slightly unique behavior here
         if let Some(tokenizer::Token::Org) = tokens.get(0) {
             let org = instructions::directives::OrgDirective::new(&tokens).unwrap();
-            location = org.0;
+            starting_location = org.0;
+            current_location = org.0;
             continue;
         }
 
         let instruction = instructions::extract_instruction(&tokens).unwrap();
-        location += instruction.byte_len();
+        current_location += instruction.byte_len();
         instructs.push(instruction);
     }
 
