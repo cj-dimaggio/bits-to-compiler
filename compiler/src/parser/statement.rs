@@ -9,8 +9,12 @@ pub enum Statement {
     },
     While {
         condition: expression::Expression,
-        statements: Vec::<Box::<Statement>>
+        statements: Vec::<Statement>
     },
+    FunctionCall {
+        identifier: String,
+        params: Vec::<expression::Expression>
+    }
 }
 
 pub fn parse(token_iter: &mut TokenIterator) -> Result<Option<Statement>, SyntaxError> {
@@ -27,7 +31,6 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Option<Statement>, Syntax
             }))
         },
         Some(Token::While) => {
-            println!("While");
             token_iter.next();
             validate_syntax!(token_iter.next(), Some(Token::OpenParen))?;
             let condition = expression::parse(token_iter)?;
@@ -35,13 +38,36 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Option<Statement>, Syntax
             validate_syntax!(token_iter.next(), Some(Token::OpenBrace))?;
             let mut statements = vec![];
             while let Some(statement) = parse(token_iter)? {
-                statements.push(Box::new(statement));
+                statements.push(statement);
             }
             validate_syntax!(token_iter.next(), Some(Token::CloseBrace))?;
             Ok(Some(Statement::While {
                 condition,
                 statements
             }))
+        },
+        Some(Token::Identifier(value)) => {
+            token_iter.next();
+            validate_syntax!(token_iter.next(), Some(Token::OpenParen))?;
+            let mut params = vec![];
+            loop {
+                match token_iter.peek() {
+                    Some(Token::CloseParen) => {
+                        token_iter.next();
+                        break;
+                    }
+                    _ => {
+                        let param = expression::parse(token_iter)?;
+                        params.push(param);
+                    }
+                }
+            }
+            validate_syntax!(token_iter.next(), Some(Token::Semicolon))?;
+            Ok(Some(Statement::FunctionCall {
+                identifier: value.clone(),
+                params,
+            }))
+
         }
         _ => Ok(None)
     }

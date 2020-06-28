@@ -19,40 +19,48 @@ pub enum Expression {
     }
 }
 
-pub fn parse(token_iter: &mut TokenIterator) -> Result<Expression, SyntaxError> {
-    let exp = match token_iter.next() {
+fn get_value(token: Option<&Token>) -> Result<Expression, SyntaxError> {
+    Ok(match token {
         Some(Token::Number(num)) => Expression::NumberLiteral(*num),
         Some(Token::QuotedString(value)) => Expression::StringLiteral(value.clone()),
         Some(Token::Identifier(value)) => Expression::Variable(value.clone()),
         _ => return Err(SyntaxError::UnexpectedToken),
-    };
+    })
+}
 
-    match token_iter.peek() {
-        Some(Token::Plus) => {
+pub fn parse(token_iter: &mut TokenIterator) -> Result<Expression, SyntaxError> {
+    let mut exp = get_value(token_iter.next())?;
+
+    while let Some(token) = token_iter.peek() {
+        match token {
+            Token::Plus => {
+                token_iter.next();
+                let right = parse(token_iter)?;
+                exp = Expression::Addition {
+                    left: Box::new(exp),
+                    right: Box::new(right),
+                };
+            },
+        Token::DoesNotEqual => {
             token_iter.next();
             let right = parse(token_iter)?;
-            Ok(Expression::Addition {
+            exp = Expression::NotComparison {
                 left: Box::new(exp),
                 right: Box::new(right),
-            })
-        }
-        Some(Token::DoesNotEqual) => {
-            token_iter.next();
-            let right = parse(token_iter)?;
-            Ok(Expression::NotComparison {
-                left: Box::new(exp),
-                right: Box::new(right),
-            })
+            }
         },
-        Some(Token::OpenBracket) => {
+        Token::OpenBracket => {
             token_iter.next();
             let inner = parse(token_iter)?;
             validate_syntax!(token_iter.next(), Some(Token::CloseBracket))?;
-            Ok(Expression::Lookup {
+            exp = Expression::Lookup {
                 base: Box::new(exp),
                 index: Box::new(inner),
-            })
+            }
         },
-        _ => Ok(exp)
+        _ => break,
+        }
     }
+    
+    Ok(exp)
 }

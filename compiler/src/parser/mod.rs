@@ -52,7 +52,15 @@ mod tests {
     #[test]
     fn parse_codeblock() {
         let code = r#"
-                while (hello_world[i] != 0) {}
+        let hello_world = "Hello, World!";
+
+        fn main() {
+            let i = 0;
+            while (hello_world[i] != 0) {
+                print(hello_world[i]);
+                let i = i + 1;
+            }
+        }        
         "#.to_string();
 
         assert_eq!(
