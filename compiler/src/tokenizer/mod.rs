@@ -19,9 +19,8 @@ pub enum Token {
     Equals,
     While,
     Let,
-    Int,
-    Void,
-    PlusEqual,
+    Function,
+    Plus,
     DoesNotEqual,
 }
 
@@ -30,14 +29,6 @@ type CharIterator<'a> = std::iter::Peekable<std::str::Chars<'a>>;
 fn one_char_token(token: Token, char_iter: &mut CharIterator) -> Token {
     char_iter.next();
     token
-}
-
-fn with_equal(token: Token, char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
-    char_iter.next();
-    match char_iter.next() {
-        Some('=') => Ok(token),
-        _ => Err(TokenizationError::UnexpectedCharacter)
-    }
 }
 
 mod string_literal;
@@ -57,8 +48,14 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, TokenizationError> {
             ']' => one_char_token(Token::CloseBracket, &mut char_iter),
             ';' => one_char_token(Token::Semicolon, &mut char_iter),
             '=' => one_char_token(Token::Equals, &mut char_iter),
-            '!' => with_equal(Token::DoesNotEqual, &mut char_iter)?,
-            '+' => with_equal(Token::PlusEqual, &mut char_iter)?,
+            '+' => one_char_token(Token::Plus, &mut char_iter),
+            '!' => {
+                char_iter.next();
+                match char_iter.next() {
+                    Some('=') => Token::DoesNotEqual,
+                    _ => return Err(TokenizationError::UnexpectedCharacter)
+                }
+            },
             '"' => string_literal::parse(&mut char_iter)?,
             c if alphanumeric::is_alphanumeric(c) => alphanumeric::parse(&mut char_iter)?,
             c if c.is_whitespace() => {
@@ -81,11 +78,11 @@ mod tests {
         let code = r#"
             let hello_world = "Hello, World!";
 
-            void main() {
-                int i = 0;
+            fn main() {
+                let i = 0;
                 while (hello_world[i] != 0) {
                     print(hello_world[i]);
-                    i += 1;
+                    i = i + 1;
                 }
             }
         "#;
@@ -94,11 +91,11 @@ mod tests {
             tokenize(String::from(code)),
             Ok(vec![
                 Token::Let, Token::Identifier("hello_world".to_string()), Token::Equals, Token::QuotedString("Hello, World!".to_string()), Token::Semicolon,
-                Token::Void, Token::Identifier("main".to_string()), Token::OpenParen, Token::CloseParen, Token::OpenBrace,
-                Token::Int, Token::Identifier("i".to_string()), Token::Equals, Token::Number(0), Token::Semicolon,
+                Token::Function, Token::Identifier("main".to_string()), Token::OpenParen, Token::CloseParen, Token::OpenBrace,
+                Token::Let, Token::Identifier("i".to_string()), Token::Equals, Token::Number(0), Token::Semicolon,
                 Token::While, Token::OpenParen, Token::Identifier("hello_world".to_string()), Token::OpenBracket, Token::Identifier("i".to_string()), Token::CloseBracket, Token::DoesNotEqual, Token::Number(0), Token::CloseParen, Token::OpenBrace,
                 Token::Identifier("print".to_string()), Token::OpenParen, Token::Identifier("hello_world".to_string()), Token::OpenBracket, Token::Identifier("i".to_string()), Token::CloseBracket, Token::CloseParen, Token::Semicolon,
-                Token::Identifier("i".to_string()), Token::PlusEqual, Token::Number(1), Token::Semicolon,
+                Token::Identifier("i".to_string()), Token::Equals, Token::Identifier("i".to_string()), Token::Plus, Token::Number(1), Token::Semicolon,
                 Token::CloseBrace,
                 Token::CloseBrace,
             ])

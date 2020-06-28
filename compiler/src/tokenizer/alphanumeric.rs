@@ -39,8 +39,7 @@ pub fn parse(char_iter: &mut CharIterator) -> Result<Token, TokenizationError> {
     match &word[..] {
         "while" => Ok(Token::While),
         "let" => Ok(Token::Let),
-        "int" => Ok(Token::Int),
-        "void" => Ok(Token::Void),
+        "fn" => Ok(Token::Function),
         _ if first_char.is_numeric() => parse_number(word),
         _ if is_alphabetic(first_char) => Ok(Token::Identifier(word)),
         _ => Err(TokenizationError::UnexpectedCharacter)

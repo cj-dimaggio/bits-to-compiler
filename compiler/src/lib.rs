@@ -3,6 +3,7 @@ use std::io::BufWriter;
 use std::io::Read;
 
 mod tokenizer;
+mod parser;
 
 pub fn compile(mut input_file: File, output_file: File) {
     let mut code = String::new();
@@ -12,5 +13,10 @@ pub fn compile(mut input_file: File, output_file: File) {
 
     let mut writer = BufWriter::new(output_file);
 
-    tokenizer::tokenize(code);
+    match tokenizer::tokenize(code) {
+        Ok(tokens) => {
+            let program = parser::parse(tokens);
+        },
+        Err(e) => println!("Error tokenizing: {:?}", e)
+    }
 }
