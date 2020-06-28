@@ -48,6 +48,9 @@ pub fn parse(tokens: Vec::<Token>) -> Result<Program, SyntaxError> {
 mod tests {
     use super::*;
     use super::super::tokenizer;
+    use function::Function;
+    use statement::Statement;
+    use expression::Expression;
 
     #[test]
     fn parse_codeblock() {
@@ -56,18 +59,29 @@ mod tests {
 
         fn main() {
             let i = 0;
-            while (hello_world[i] != 0) {
-                print(hello_world[i]);
-                let i = i + 1;
-            }
         }        
         "#.to_string();
 
         assert_eq!(
             parse(tokenizer::tokenize(code).unwrap()),
             Ok(Program {
-                statements: vec![],
-                functions: vec![],
+                statements: vec![
+                    Statement::Assignment{
+                        identifier: "hello_world".to_string(),
+                        value: Expression::StringLiteral("Hello, World!".to_string()),
+                    }
+                ],
+                functions: vec![
+                    Function {
+                        identifier: "main".to_string(),
+                        statements: vec![
+                            Statement::Assignment {
+                                identifier: "i".to_string(),
+                                value: Expression::NumberLiteral(0),
+                            },
+                        ],
+                    }
+                ],
             })
         );
     }

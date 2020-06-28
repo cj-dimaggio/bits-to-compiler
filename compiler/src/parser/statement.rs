@@ -72,3 +72,86 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Option<Statement>, Syntax
         _ => Ok(None)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use expression::Expression;
+
+    #[test]
+    fn assignment_statement() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::Let,
+                Token::Identifier("foobar".to_string()),
+                Token::Equals,
+                Token::Number(5),
+                Token::Semicolon,
+            ].iter().peekable()),
+            Ok(Some(Statement::Assignment{
+                identifier: "foobar".to_string(),
+                value: Expression::NumberLiteral(5),
+            }))
+        );
+    }
+
+    #[test]
+    fn function_statement() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::Identifier("foobar".to_string()),
+                Token::OpenParen,
+                Token::CloseParen,
+                Token::Semicolon,
+            ].iter().peekable()),
+            Ok(Some(Statement::FunctionCall{
+                identifier: "foobar".to_string(),
+                params: vec![],
+            }))
+        );
+    }
+
+    #[test]
+    fn while_statement() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::While,
+                Token::OpenParen,
+                Token::Number(1),
+                Token::DoesNotEqual,
+                Token::Number(2),
+                Token::CloseParen,
+                Token::OpenBrace,
+
+                Token::Let,
+                Token::Identifier("foo".to_string()),
+                Token::Equals,
+                Token::Number(5),
+                Token::Semicolon,
+
+                Token::Identifier("bar".to_string()),
+                Token::OpenParen,
+                Token::CloseParen,
+                Token::Semicolon,
+
+                Token::CloseBrace,
+            ].iter().peekable()),
+            Ok(Some(Statement::While{
+                condition: Expression::NotComparison {
+                    left: Box::new(Expression::NumberLiteral(1)),
+                    right: Box::new(Expression::NumberLiteral(2)),
+                },
+                statements: vec![
+                    Statement::Assignment {
+                        identifier: "foo".to_string(),
+                        value: Expression::NumberLiteral(5),
+                    },
+                    Statement::FunctionCall {
+                        identifier: "bar".to_string(),
+                        params: vec![],
+                    }
+                ],
+            }))
+        );
+    }
+}

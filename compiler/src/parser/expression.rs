@@ -64,3 +64,109 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Expression, SyntaxError> 
     
     Ok(exp)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn value_expressions() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::Number(5),
+            ].iter().peekable()),
+            Ok(Expression::NumberLiteral(5))
+        );
+        assert_eq!(
+            parse(&mut vec![
+                Token::QuotedString("Test".to_string()),
+            ].iter().peekable()),
+            Ok(Expression::StringLiteral("Test".to_string()))
+        );
+        assert_eq!(
+            parse(&mut vec![
+                Token::Identifier("foobar".to_string()),
+            ].iter().peekable()),
+            Ok(Expression::Variable("foobar".to_string()))
+        );
+    }
+
+    #[test]
+    fn lookup_expressions() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::Identifier("foobar".to_string()),
+                Token::OpenBracket,
+                Token::Number(5),
+                Token::CloseBracket,
+            ].iter().peekable()),
+            Ok(Expression::Lookup{
+                base: Box::new(Expression::Variable("foobar".to_string())),
+                index: Box::new(Expression::NumberLiteral(5)),
+            })
+        );
+    }
+
+    #[test]
+    fn not_comparison_expressions() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::Number(5),
+                Token::DoesNotEqual,
+                Token::Number(1),
+            ].iter().peekable()),
+            Ok(Expression::NotComparison{
+                left: Box::new(Expression::NumberLiteral(5)),
+                right: Box::new(Expression::NumberLiteral(1)),
+            })
+        );
+    }
+
+    #[test]
+    fn addition_expressions() {
+        assert_eq!(
+            parse(&mut vec![
+                Token::Number(5),
+                Token::Plus,
+                Token::Number(1),
+            ].iter().peekable()),
+            Ok(Expression::Addition{
+                left: Box::new(Expression::NumberLiteral(5)),
+                right: Box::new(Expression::NumberLiteral(1)),
+            })
+        );
+    }
+
+    #[test]
+    fn complex_expressions() {
+        // foobar[i + 1] != 5 + 4
+        assert_eq!(
+            parse(&mut vec![
+                Token::Identifier("foobar".to_string()),
+                Token::OpenBracket,
+                Token::Identifier("i".to_string()),
+                Token::Plus,
+                Token::Number(1),
+                Token::CloseBracket,
+                Token::DoesNotEqual,
+                Token::Number(5),
+                Token::Plus,
+                Token::Number(4)
+            ].iter().peekable()),
+            Ok(Expression::NotComparison{
+                left: Box::new(Expression::Lookup{
+                    base: Box::new(Expression::Variable("foobar".to_string())),
+                    index: Box::new(Expression::Addition {
+                        left: Box::new(Expression::Variable("i".to_string())),
+                        right: Box::new(Expression::NumberLiteral(1))
+                    }),
+                }),
+                right: Box::new(Expression::Addition{
+                    left: Box::new(Expression::NumberLiteral(5)),
+                    right: Box::new(Expression::NumberLiteral(4)),
+                }),
+            })
+        );
+    }
+}
+
