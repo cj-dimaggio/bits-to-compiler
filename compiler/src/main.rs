@@ -19,7 +19,7 @@ fn main() {
         eprintln!("Opening input: {}", filename);
         match File::open(filename) {
             Ok(input_file) => {
-                let output_path = file_path.with_extension("bin");
+                let output_path = file_path.with_extension("asm");
                 eprintln!("Opening output: {}", output_path.display());
                 match File::create(&output_path) {
                     Ok(output_file) => compiler::compile(input_file, output_file),
