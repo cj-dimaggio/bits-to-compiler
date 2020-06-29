@@ -38,6 +38,10 @@ main:
 
         ;!= 0
         cmp bx, ax
+        mov ax, 0
+        setnz al
+
+        cmp ax, 0
         je .end
 
         ; print
