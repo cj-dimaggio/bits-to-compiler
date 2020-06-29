@@ -4,6 +4,7 @@ use std::io::Read;
 
 mod tokenizer;
 mod parser;
+mod gen;
 
 pub fn compile(mut input_file: File, output_file: File) {
     let mut code = String::new();
@@ -15,7 +16,10 @@ pub fn compile(mut input_file: File, output_file: File) {
 
     match tokenizer::tokenize(code) {
         Ok(tokens) => {
-            let program = parser::parse(tokens);
+            match parser::parse(tokens) {
+                Ok(program) => gen::generate(&mut writer, program),
+                Err(e) => println!("Error tokenizing: {:?}", e)
+            }
         },
         Err(e) => println!("Error tokenizing: {:?}", e)
     }

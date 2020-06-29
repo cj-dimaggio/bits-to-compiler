@@ -1,4 +1,5 @@
 use super::tokenizer::Token;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SyntaxError {
@@ -16,20 +17,20 @@ mod expression;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Program {
-    functions: Vec::<function::Function>,
+    functions: HashMap<String, function::Function>,
     statements: Vec::<statement::Statement>,
 }
 
 pub fn parse(tokens: Vec::<Token>) -> Result<Program, SyntaxError> {
     let mut token_iter = tokens.iter().peekable();
 
-    let mut functions = vec![];
+    let mut functions = HashMap::new();
     let mut statements = vec![];
 
     while let Some(token) = token_iter.peek() {
         if let Token::Function = token {
             let function = function::parse(&mut token_iter)?;
-            functions.push(function);
+            functions.insert(function.identifier.clone(), function);
         }
         else if let Some(statement) = statement::parse(&mut token_iter)? {
             statements.push(statement)
@@ -52,6 +53,18 @@ mod tests {
     use statement::Statement;
     use expression::Expression;
 
+    macro_rules! map(
+        { $($key:expr => $value:expr),+ } => {
+            {
+                let mut m = HashMap::new();
+                $(
+                    m.insert($key, $value);
+                )+
+                m
+            }
+         };
+    );
+
     #[test]
     fn parse_codeblock() {
         let code = r#"
@@ -71,8 +84,8 @@ mod tests {
                         value: Expression::StringLiteral("Hello, World!".to_string()),
                     }
                 ],
-                functions: vec![
-                    Function {
+                functions: map! {
+                    "main".to_string() => Function {
                         identifier: "main".to_string(),
                         statements: vec![
                             Statement::Assignment {
@@ -81,7 +94,7 @@ mod tests {
                             },
                         ],
                     }
-                ],
+                },
             })
         );
     }
