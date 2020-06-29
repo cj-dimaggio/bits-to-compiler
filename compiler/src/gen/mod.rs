@@ -131,6 +131,11 @@ fn compile_function(ctx: &mut Context, function: &Function) {
     ctx.write("push bp");
     ctx.write("mov bp, sp");
 
+    if let Some(arg) = &function.argument {
+        ctx.write("push ax");
+        ctx.new_variable(arg);  
+    }
+
     for statement in &function.statements {
         compile_statement(ctx, &statement);
     }
@@ -197,9 +202,9 @@ fn compile_statement(ctx: &mut Context, statement: &Statement) {
                 }
             }
         },
-        Statement::FunctionCall { identifier, params } => {
+        Statement::FunctionCall { identifier, param } => {
             // Only handle a max of one param for now
-            if let Some(e) = params.first() {
+            if let Some(e) = param {
                 compile_expression(ctx, e);
             }
 

@@ -1,8 +1,11 @@
-fn main() {
-    let str = "Hello World";
+fn print_string(string) {
     let i = 0;
-    while (str[i] != 0) {
-        print(str[i]);
+    while (string[i] != 0) {
+        print(string[i]);
         let i = i + 1;
     }
+}
+
+fn main() {
+    print_string("Hello, World!");
 }

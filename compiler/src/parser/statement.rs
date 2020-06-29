@@ -13,7 +13,7 @@ pub enum Statement {
     },
     FunctionCall {
         identifier: String,
-        params: Vec::<expression::Expression>
+        param: Option::<expression::Expression>
     }
 }
 
@@ -49,23 +49,23 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Option<Statement>, Syntax
         Some(Token::Identifier(value)) => {
             token_iter.next();
             validate_syntax!(token_iter.next(), Some(Token::OpenParen))?;
-            let mut params = vec![];
-            loop {
-                match token_iter.peek() {
-                    Some(Token::CloseParen) => {
-                        token_iter.next();
-                        break;
-                    }
-                    _ => {
-                        let param = expression::parse(token_iter)?;
-                        params.push(param);
-                    }
+            let mut param = None;
+
+            match token_iter.peek() {
+                Some(Token::CloseParen) => {
+                    token_iter.next();
+                }
+                _ => {
+                    let value = expression::parse(token_iter)?;
+                    param = Some(value);
+                    validate_syntax!(token_iter.next(), Some(Token::CloseParen))?;
                 }
             }
+
             validate_syntax!(token_iter.next(), Some(Token::Semicolon))?;
             Ok(Some(Statement::FunctionCall {
                 identifier: value.clone(),
-                params,
+                param,
             }))
 
         }
@@ -106,7 +106,7 @@ mod tests {
             ].iter().peekable()),
             Ok(Some(Statement::FunctionCall{
                 identifier: "foobar".to_string(),
-                params: vec![],
+                param: None,
             }))
         );
     }
@@ -148,7 +148,7 @@ mod tests {
                     },
                     Statement::FunctionCall {
                         identifier: "bar".to_string(),
-                        params: vec![],
+                        param: None,
                     }
                 ],
             }))

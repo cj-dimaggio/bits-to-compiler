@@ -17,10 +17,9 @@ print:
     pop bp
     ret
     
-main:
+print_string:
 push bp
 mov bp, sp
-mov ax, string_0
 push ax
 mov ax, 0
 push ax
@@ -51,9 +50,17 @@ jmp .label_0
 mov sp, bp
 pop bp
 ret
+main:
+push bp
+mov bp, sp
+mov ax, string_0
+call print_string
+mov sp, bp
+pop bp
+ret
 epilogue:
 cli
 hlt
-string_0: db "Hello World", 0
+string_0: db "Hello, World!", 0
 times 510 - ($-$$) db 0
 dw 0xaa55

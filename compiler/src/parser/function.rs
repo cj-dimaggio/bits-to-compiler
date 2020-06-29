@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, PartialEq, Eq)]
 pub struct Function {
     pub identifier: String,
+    pub argument: Option<String>,
     pub statements: Vec::<statement::Statement>
 }
 
@@ -10,7 +11,21 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Function, SyntaxError> {
     validate_syntax!(token_iter.next(), Some(Token::Function))?;
     let identifier = validate_syntax!(token_iter.next(), Some(Token::Identifier(x)) => x)?;
     validate_syntax!(token_iter.next(), Some(Token::OpenParen))?;
-    validate_syntax!(token_iter.next(), Some(Token::CloseParen))?;
+
+    let mut argument = None;
+
+    match token_iter.peek() {
+        Some(Token::CloseParen) => {
+            token_iter.next();
+        }
+        Some(Token::Identifier(name)) => {
+            argument = Some(name.clone());
+            token_iter.next();
+            validate_syntax!(token_iter.next(), Some(Token::CloseParen))?;
+        },
+        _ => return Err(SyntaxError::UnexpectedToken)
+    }
+
     validate_syntax!(token_iter.next(), Some(Token::OpenBrace))?;
 
     let mut statements = vec![];
@@ -22,6 +37,7 @@ pub fn parse(token_iter: &mut TokenIterator) -> Result<Function, SyntaxError> {
 
     Ok(Function {
         identifier: identifier.clone(),
+        argument,
         statements,
     })
 }
@@ -57,6 +73,7 @@ mod tests {
             ].iter().peekable()),
             Ok(Function {
                 identifier: "main".to_string(),
+                argument: None,
                 statements: vec![
                     Statement::Assignment {
                         identifier: "foo".to_string(),
@@ -64,7 +81,7 @@ mod tests {
                     },
                     Statement::FunctionCall {
                         identifier: "bar".to_string(),
-                        params: vec![],
+                        param: None,
                     }
                 ],
             })

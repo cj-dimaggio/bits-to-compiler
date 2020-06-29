@@ -71,6 +71,7 @@ mod tests {
                 }],
                 functions: vec![Function {
                     identifier: "main".to_string(),
+                    argument: None,
                     statements: vec![Statement::Assignment {
                         identifier: "i".to_string(),
                         value: Expression::NumberLiteral(0),
