@@ -84,6 +84,20 @@ fn prologue(ctx: &mut Context) {
     ctx.write("mov sp, ($$ + 510)");
     ctx.write("call main");
     ctx.write("call epilogue");
+
+    // Built in functions
+    ctx.write(r#"
+print:
+    push bp
+    mov bp, sp
+
+    mov ah,0x0e
+    int 0x10
+
+    mov sp, bp
+    pop bp
+    ret
+    "#)
 }
 
 fn epilogue(ctx: &mut Context) {
@@ -183,7 +197,12 @@ fn compile_statement(ctx: &mut Context, statement: &Statement) {
                 }
             }
         },
-        Statement::FunctionCall { identifier, params: _ } => {
+        Statement::FunctionCall { identifier, params } => {
+            // Only handle a max of one param for now
+            if let Some(e) = params.first() {
+                compile_expression(ctx, e);
+            }
+
             ctx.write(&format!("call {}", identifier));
         },
         Statement::While { condition, statements } => {

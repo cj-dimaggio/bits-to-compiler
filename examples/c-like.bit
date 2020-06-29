@@ -2,6 +2,7 @@ fn main() {
     let str = "Hello World";
     let i = 0;
     while (str[i] != 0) {
+        print(str[i]);
         let i = i + 1;
     }
 }

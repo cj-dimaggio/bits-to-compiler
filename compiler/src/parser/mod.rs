@@ -1,5 +1,4 @@
 use super::tokenizer::Token;
-use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SyntaxError {
