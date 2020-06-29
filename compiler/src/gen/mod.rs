@@ -26,10 +26,12 @@ fn prologue(ctx: &mut Context) {
     ctx.write("mov bp, ($$ + 510)");
     ctx.write("mov sp, ($$ + 510)");
     ctx.write("call main");
+    ctx.write("call epilogue");
 }
 
 fn epilogue(ctx: &mut Context) {
     ctx.write("epilogue:");
+    ctx.write("cli");
     ctx.write("hlt");
 
     ctx.write("times 510 - ($-$$) db 0");

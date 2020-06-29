@@ -1,38 +1,59 @@
-bits 16 ; tell NASM this is 16 bit code
-org 0x7c00 ; tell NASM to start outputting stuff at offset 0x7c00
-start:
+bits 16
+org 0x7c00
+
+prologue:
     mov bp, ($$ + 510)
     mov sp, ($$ + 510)
-    push 0xF8F0
+    call main
+    call epilogue
 
+main:
+    mov ax, 1
+    mov bx, ax
+    mov ax, 1
+    add ax, bx
 
-    cmp (bp), 0xF8F0
-    je print_success
-    jmp print_fail
+    push 55
+    push 22
+    mov bx, sp ; https://board.flatassembler.net/topic.php?t=21150 can't access sp directly
 
-halt:
-    cli ; clear interrupt flag
-    hlt ; halt execution
+    cmp ax, 2
+    jz .ok
+    .skip:
+        add sp, 4
+        ret
 
-print_success:
-    mov si,success ; point si register to hello label memory location
+    .ok:
+        call print_test
+        add sp, 4
+        ret
+
+epilogue:
+    call print_done
+    cli
+    hlt
+
+print_done:
+    mov si, done ; point si register to hello label memory location
     jmp print
 
-print_fail:
-    mov si,fail ; point si register to hello label memory location
+print_test:
+    mov si,test ; point si register to hello label memory location
     jmp print
 
 print:
     mov ah,0x0e ; 0x0e means 'Write Character in TTY mode'
-.loop:
-    lodsb
-    or al,al ; is al == 0 ?
-    jz halt  ; if (al == 0) jump to halt label
-    int 0x10 ; runs BIOS interrupt 0x10 - Video Services
-    jmp .loop
+    .loop:
+        lodsb
+        or al,al ; is al == 0 ?
+        jz .escape  ; if (al == 0) jump to halt label
+        int 0x10 ; runs BIOS interrupt 0x10 - Video Services
+        jmp .loop
+    .escape:
+        ret
 
-success: db "SUCCESS",0
-fail: db "FAIL",0
+done: db "DONE", 0
+test: db "TEST", 0
 
-times 510 - ($-$$) db 0 ; pad remaining 510 bytes with zeroes
-dw 0xaa55 ; magic bootloader magic - marks this 512 byte sector bootable!
+times 510 - ($-$$) db 0
+dw 0xaa55
