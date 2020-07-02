@@ -30,7 +30,9 @@ The build artifact can then be tested using QEMU using:
 $ qemu-system-x86_64 -fda ../examples/example-loop.bin
 ```
 
-(Debugging the produced binary can also be down by examining the disassembly: `bjdump -b binary -mi386 -Maddr16,data16 -D examples/example-loop.bin`)
+(Debugging the produced binary can also be done by examining the disassembly: `bjdump -b binary -mi386 -Maddr16,data16 -D examples/example-loop.bin`)
+
+![Bit file](https://i.imgur.com/VWisAsN.png)
 
 # Assembler
 
@@ -51,6 +53,8 @@ And then run in QEMU with:
 ```
 $ qemu-system-x86_64 -fda ../examples/loop-2.bin
 ```
+
+![Bit file](https://i.imgur.com/mkF7IGi.png)
 
 # Compiler
 
@@ -73,3 +77,8 @@ Can then be run with:
 ```
 $ qemu-system-x86_64 -fda examples/c-like.bin
 ```
+
+![Bit file](https://i.imgur.com/ozKFvmk.png)
+
+![Bit file](https://i.imgur.com/LJ2DPbL.png)
+
